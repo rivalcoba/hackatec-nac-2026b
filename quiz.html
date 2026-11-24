@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>¿Conoces las herramientas?</title>
+  <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
+  <script src="/interaction.js"></script>
+  <script src="/game.js"></script>
+  <style>
+    #status, #model-error { position: fixed; z-index: 2; left: 0; margin: 0; padding: 0.5rem; color: white; background: #222c; font: 14px sans-serif; }
+    #status { top: 0; }
+    #model-error { top: 2.5rem; }
+  </style>
+</head>
+<body>
+  <p id="status" role="status">Conectando con la PC...</p>
+  <p id="model-error" role="alert" hidden></p>
+  <a-scene background="color: #263345">
+    <a-assets>
+      <a-asset-item id="allen-key" src="/assets/allen-key.glb"></a-asset-item>
+      <a-asset-item id="bolt-cutter" src="/assets/bolt-cutter.glb"></a-asset-item>
+      <a-asset-item id="pipe-wrench" src="/assets/pipe-wrench.glb"></a-asset-item>
+      <a-asset-item id="vernier-caliper" src="/assets/vernier-caliper.glb"></a-asset-item>
+      <canvas id="hud-canvas" width="1024" height="256"></canvas>
+      <canvas id="lift-canvas" width="1024" height="128"></canvas>
+    </a-assets>
+    <a-camera position="0 1.6 0">
+      <a-entity id="hud" position="0 0.56 -1">
+        <a-plane id="hud-panel" width="1.7" height="0.425" position="0 -0.2125 0" material="shader: flat; src: #hud-canvas; transparent: true"></a-plane>
+      </a-entity>
+    </a-camera>
+    <a-entity id="tool-0" position="-1.1 1 -3"><a-entity class="model" fit-model="size: 0.8" visible="false"></a-entity><a-torus class="ring" radius="0.5" radius-tubular="0.012" visible="false"></a-torus></a-entity>
+    <a-entity id="tool-1" position="0 1 -3"><a-entity class="model" fit-model="size: 0.8" visible="false"></a-entity><a-torus class="ring" radius="0.5" radius-tubular="0.012" visible="false"></a-torus></a-entity>
+    <a-entity id="tool-2" position="1.1 1 -3"><a-entity class="model" fit-model="size: 0.8" visible="false"></a-entity><a-torus class="ring" radius="0.5" radius-tubular="0.012" visible="false"></a-torus></a-entity>
+    <a-entity id="lift-line" position="0 1.9 -3">
+      <a-box width="3.4" height="0.015" depth="0.015" color="#ffd54a"></a-box>
+      <a-plane width="1.6" height="0.2" position="0 0.12 0" material="shader: flat; src: #lift-canvas; transparent: true"></a-plane>
+    </a-entity>
+    <a-sphere id="cursor" position="0 1.5 -3" radius="0.045" color="#00ff96" visible="false"></a-sphere>
+    <a-plane rotation="-90 0 0" width="12" height="12" color="#465b69"></a-plane>
+    <a-sky color="#263345"></a-sky>
+  </a-scene>
+  <script>
+    AFRAME.registerComponent('fit-model', {
+      schema: { size: { default: 0.8 } },
+      init() {
+        this.el.addEventListener('model-loaded', () => this.fit());
+      },
+      // Centers the model on its slot and scales its longest visible side to `size`.
+      fit() {
+        const { object3D } = this.el;
+        const mesh = this.el.getObject3D('mesh');
+        if (!mesh) return;
+        object3D.position.set(0, 0, 0);
+        object3D.scale.set(1, 1, 1);
+        object3D.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(mesh);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3())
+          .sub(this.el.parentEl.object3D.getWorldPosition(new THREE.Vector3()));
+        const scale = this.data.size / Math.max(size.x, size.y);
+        object3D.scale.setScalar(scale);
+        object3D.position.copy(center).multiplyScalar(-scale);
+        this.el.setAttribute('visible', true);
+      }
+    });
+
+    const TOOL_ROTATION = {
+      'allen-key': '0 0 0',
+      'bolt-cutter': '90 0 0',
+      'pipe-wrench': '90 0 0',
+      'vernier-caliper': '90 0 0'
+    };
+    const TONE_COLOR = { neutral: '#ffffff', good: '#72d6a1', bad: '#ff8b79' };
+    const FONT = 'system-ui, "Segoe UI", Roboto, sans-serif';
+
+    const game = createGame();
+    const slots = [0, 1, 2].map(i => {
+      const entity = document.getElementById(`tool-${i}`);
+      return { entity, model: entity.querySelector('.model'), ring: entity.querySelector('.ring'), toolId: null };
+    });
+    const hudPanel = document.getElementById('hud-panel');
+    const hudCanvas = document.getElementById('hud-canvas');
+    const liftLine = document.getElementById('lift-line');
+    const cursor = document.getElementById('cursor');
+    const status = document.getElementById('status');
+    const modelError = document.getElementById('model-error');
+    let lastMessage = 0;
+    let shownText = '';
+
+    drawLiftLabel();
+    document.querySelector('a-scene').addEventListener('loaded', () => game.start(Date.now()));
+    document.querySelectorAll('.model').forEach(model => {
+      model.addEventListener('model-error', event => {
+        console.error('Error al cargar el modelo 3D:', event.detail);
+        modelError.textContent = 'No se pudo cargar el modelo 3D.';
+        modelError.hidden = false;
+      });
+    });
+
+    // Text is drawn on a canvas because A-Frame's built-in fonts lack Spanish accents.
+    function fitText(ctx, text, size, weight, maxWidth) {
+      let current = size;
+      do {
+        ctx.font = `${weight} ${current}px ${FONT}`;
+        current -= 2;
+      } while (ctx.measureText(text).width > maxWidth && current > 16);
+    }
+
+    function drawHud(state) {
+      const lines = state.message.split('\n');
+      const results = state.phase === 'results';
+      const lineHeight = results ? 58 : 76;
+      hudCanvas.height = 84 + lines.length * lineHeight + 24;
+      const ctx = hudCanvas.getContext('2d');
+      ctx.fillStyle = 'rgba(16, 21, 28, 0.85)';
+      ctx.fillRect(0, 0, hudCanvas.width, hudCanvas.height);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#9ab4bd';
+      fitText(ctx, state.title, 36, '600', 960);
+      ctx.fillText(state.title, hudCanvas.width / 2, 44);
+      ctx.fillStyle = TONE_COLOR[state.tone];
+      lines.forEach((line, i) => {
+        fitText(ctx, line, results ? 40 : 60, results ? '500' : '700', 960);
+        ctx.fillText(line, hudCanvas.width / 2, 84 + lineHeight * (i + 0.5));
+      });
+      const height = 1.7 * hudCanvas.height / hudCanvas.width;
+      hudPanel.setAttribute('height', height);
+      hudPanel.setAttribute('position', { x: 0, y: -height / 2, z: 0 });
+      const texture = hudPanel.getObject3D('mesh')?.material.map;
+      if (texture) {
+        texture.dispose();
+        texture.needsUpdate = true;
+      }
+    }
+
+    function drawLiftLabel() {
+      const canvas = document.getElementById('lift-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffd54a';
+      ctx.font = `600 64px ${FONT}`;
+      ctx.fillText('Sube aquí para elegir', canvas.width / 2, canvas.height / 2);
+    }
+
+    function draw(state) {
+      slots.forEach((slot, i) => {
+        const item = state.items.find(candidate => candidate.slot === i);
+        slot.entity.setAttribute('visible', !!item);
+        if (!item) return;
+        slot.entity.setAttribute('position', { x: item.x, y: item.y, z: -3 });
+        if (slot.toolId !== item.id) {
+          slot.toolId = item.id;
+          slot.model.setAttribute('visible', false);
+          slot.model.setAttribute('rotation', TOOL_ROTATION[item.id]);
+          slot.model.setAttribute('gltf-model', `#${item.id}`);
+        }
+        const ringColor = item.id === state.held ? '#ffff00' : item.id === state.highlight ? '#72d6a1' : null;
+        slot.ring.setAttribute('visible', !!ringColor);
+        if (ringColor) slot.ring.setAttribute('color', ringColor);
+      });
+      liftLine.setAttribute('visible', state.phase === 'playing');
+      cursor.setAttribute('visible', !!state.cursor);
+      if (state.cursor) cursor.setAttribute('position', { ...state.cursor, z: -2.65 });
+      const text = `${state.title}\n${state.message}\n${state.tone}`;
+      if (text !== shownText) {
+        shownText = text;
+        drawHud(state);
+      }
+    }
+
+    function render(input) {
+      draw(game.update(input, Date.now()));
+    }
+
+    function connect() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socket = new WebSocket(`${protocol}//${location.host}/viewer`);
+      socket.addEventListener('open', () => { status.textContent = 'Conectado; esperando la mano de la PC'; });
+      socket.addEventListener('message', event => {
+        const input = JSON.parse(event.data);
+        lastMessage = Date.now();
+        status.textContent = input.present ? 'Mano detectada' : 'Sin mano detectada';
+        render(input);
+      });
+      socket.addEventListener('error', () => { status.textContent = 'Error de conexión con la PC'; });
+      socket.addEventListener('close', () => {
+        render({ present: false });
+        status.textContent = 'Desconectado; intentando reconectar...';
+        setTimeout(connect, 1500);
+      });
+    }
+    setInterval(() => {
+      if (lastMessage && Date.now() - lastMessage > 1500) {
+        render({ present: false });
+        status.textContent = 'Sin señal de seguimiento';
+        lastMessage = 0;
+      } else {
+        draw(game.tick(Date.now()));
+      }
+    }, 250);
+    connect();
+  </script>
+</body>
+</html>

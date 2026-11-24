@@ -72,6 +72,10 @@
       gap: 20px;
     }
 
+    .choice-link:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+
     .choice-link {
       min-height: 240px;
       color: inherit;
@@ -245,9 +249,18 @@
           <span class="launch">Lanzar seguimiento</span>
         </article>
       </a>
+
+      <a class="choice-link" href="/quiz">
+        <article class="choice choice--vr">
+          <span class="number" aria-hidden="true">03</span>
+          <h2>¿Conoces las herramientas?</h2>
+          <p>Tres rondas en VR: toma la herramienta que se pide y súbela para elegirla.</p>
+          <span class="launch">Lanzar el juego</span>
+        </article>
+      </a>
     </div>
 
-    <p class="hint">Para controlar la escena VR, abre el seguimiento en la PC y la experiencia VR en tu teléfono.</p>
+    <p class="hint">Para controlar la escena VR o el juego, abre el seguimiento en la PC y la experiencia VR en tu teléfono.</p>
   </main>
 </body>
 </html>

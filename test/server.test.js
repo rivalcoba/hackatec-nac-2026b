@@ -21,7 +21,9 @@ test('server delivers hand state and releases viewers on disconnect', async t =>
     ['/', 'text/html; charset=utf-8'],
     ['/tracker', 'text/html; charset=utf-8'],
     ['/vr?source=test', 'text/html; charset=utf-8'],
-    ['/interaction.js', 'text/javascript; charset=utf-8']
+    ['/quiz', 'text/html; charset=utf-8'],
+    ['/interaction.js', 'text/javascript; charset=utf-8'],
+    ['/game.js', 'text/javascript; charset=utf-8']
   ]) {
     const response = await fetch(`${base}${route}`);
     assert.equal(response.status, 200);
@@ -32,6 +34,7 @@ test('server delivers hand state and releases viewers on disconnect', async t =>
   const home = await (await fetch(`${base}/`)).text();
   assert.match(home, /href="\/vr"/);
   assert.match(home, /href="\/tracker"/);
+  assert.match(home, /href="\/quiz"/);
   const trackerPage = await (await fetch(`${base}/tracker`)).text();
   assert.match(trackerPage, /Seguimiento de mano \| Manipulación con la mano/);
   const model = await fetch(`${base}/assets/vernier-caliper.glb`);

@@ -15,40 +15,56 @@
     };
   }
 
-  function createInteraction() {
-    let object = { x: 0, y: 1.5 };
+  function createPointer() {
     let cursor = null;
-    let held = false;
     let wasPinched = false;
-    let offset = { x: 0, y: 0 };
 
     function update(input) {
       if (!input.present) {
         cursor = null;
-        held = false;
         wasPinched = false;
-      } else {
-        const target = { x: (input.x - 0.5) * 3.2, y: 2.5 - input.y * 2 };
-        cursor = cursor
-          ? { x: cursor.x + (target.x - cursor.x) * 0.4, y: cursor.y + (target.y - cursor.y) * 0.4 }
-          : target;
-        if (input.pinched && !wasPinched && Math.hypot(cursor.x - object.x, cursor.y - object.y) < 0.32) {
-          held = true;
-          offset = { x: object.x - cursor.x, y: object.y - cursor.y };
-        } else if (!input.pinched) {
-          held = false;
-        }
-        if (held) object = { x: cursor.x + offset.x, y: cursor.y + offset.y };
-        wasPinched = input.pinched;
+        return { cursor: null, pinched: false, pressed: false };
       }
-      return { object: { ...object }, cursor: cursor && { ...cursor }, held };
+      const target = { x: (input.x - 0.5) * 3.2, y: 2.5 - input.y * 2 };
+      cursor = cursor
+        ? { x: cursor.x + (target.x - cursor.x) * 0.4, y: cursor.y + (target.y - cursor.y) * 0.4 }
+        : target;
+      const pressed = input.pinched && !wasPinched;
+      wasPinched = input.pinched;
+      return { cursor: { ...cursor }, pinched: input.pinched, pressed };
     }
 
     return { update };
   }
 
-  if (typeof module !== 'undefined') module.exports = { createInteraction, findRightHand, handState };
+  function createInteraction() {
+    const pointer = createPointer();
+    let object = { x: 0, y: 1.5 };
+    let held = false;
+    let offset = { x: 0, y: 0 };
+
+    function update(input) {
+      const { cursor, pinched, pressed } = pointer.update(input);
+      if (!cursor) {
+        held = false;
+      } else {
+        if (pressed && Math.hypot(cursor.x - object.x, cursor.y - object.y) < 0.32) {
+          held = true;
+          offset = { x: object.x - cursor.x, y: object.y - cursor.y };
+        } else if (!pinched) {
+          held = false;
+        }
+        if (held) object = { x: cursor.x + offset.x, y: cursor.y + offset.y };
+      }
+      return { object: { ...object }, cursor, held };
+    }
+
+    return { update };
+  }
+
+  if (typeof module !== 'undefined') module.exports = { createPointer, createInteraction, findRightHand, handState };
   else {
+    root.createPointer = createPointer;
     root.createInteraction = createInteraction;
     root.findRightHand = findRightHand;
     root.handState = handState;

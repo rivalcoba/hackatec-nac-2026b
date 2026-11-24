@@ -13,6 +13,17 @@ El calibrador se mueve en un plano fijo; la webcam no proporciona profundidad re
 
 Express sirve los modelos de la carpeta `assets` bajo `/assets`; la escena carga `assets/vernier-caliper.glb`.
 
+## Juego: ¿Conoces las herramientas?
+
+Abre `http://IP_DE_LA_PC:3000/quiz` en el teléfono (con el seguimiento abierto en la PC, igual que en la experiencia VR). Es un juego de 3 rondas:
+
+1. En la parte superior de la vista aparece el texto, por ejemplo «Toma la llave Allen y súbela», y se muestran 3 herramientas distintas.
+2. Mueve el indicador verde sobre una herramienta, junta el pulgar y el índice para tomarla y súbela por encima de la línea amarilla para elegirla. Si la sueltas antes, vuelve a su lugar sin contar como elección.
+3. Se indica si fue correcto (si no, cuál era la herramienta pedida) y empieza la siguiente ronda. Las herramientas pedidas no se repiten dentro de una partida.
+4. Tras la tercera ronda se muestran los aciertos, el tiempo de cada elección y el promedio, junto con una valoración. Después de 10 segundos la partida se reinicia sola.
+
+La lógica del juego está en `game.js` (pruebas en `test/game.test.js`) y la escena en `quiz.html`. Para añadir una herramienta, agrégala a `TOOLS` en `game.js` y en `quiz.html` (`a-assets` y `TOOL_ROTATION`).
+
 ## HTTPS y Cardboard
 
 Para una prueba de VR en el teléfono, usa HTTPS con un certificado válido y confiable para su dirección. La cámara en la PC funciona en `localhost` por HTTP, pero una dirección IP LAN por HTTP no es un contexto seguro; las funciones de VR y sensores también pueden requerir HTTPS. Tanto PC como teléfono deben poder confiar en el certificado.
