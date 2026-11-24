@@ -3,327 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101311">
-  <title>HandLab · Control por gestos</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.js"></script>
-  <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
-  <style>
-    :root {
-      color-scheme: dark;
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: #101311;
-      color: #eef2e9;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; min-width: 280px; }
-    .app { max-width: 1440px; margin: 0 auto; padding: 0 5%; }
-    .topbar {
-      min-height: 82px; display: flex; justify-content: space-between;
-      align-items: center; gap: 20px; border-bottom: 1px solid #303830;
-    }
-    .brand { display: flex; align-items: center; gap: 11px; font-size: 19px; font-weight: 750; letter-spacing: -.05em; }
-    .brand-mark {
-      width: 30px; height: 30px; display: grid; place-items: center;
-      background: #c4f46d; color: #101311; font-size: 18px; font-weight: 800;
-    }
-    .brand span:last-child { color: #9da79b; font-weight: 400; }
-    .topbar-label, .eyebrow, .panel-label, .step-number, .footer {
-      font-family: "Courier New", monospace; text-transform: uppercase; letter-spacing: .12em;
-    }
-    .topbar-label { color: #8c988a; font-size: 10px; text-align: right; }
-    main { padding: 66px 0 72px; }
-    .intro { max-width: 790px; margin-bottom: 42px; }
-    .eyebrow { display: flex; align-items: center; gap: 10px; color: #c4f46d; font-size: 11px; font-weight: 700; }
-    .eyebrow::before { content: ""; width: 23px; height: 2px; background: #c4f46d; }
-    h1 { margin: 20px 0 14px; font-size: clamp(40px, 5.2vw, 72px); line-height: 1.02; letter-spacing: -.065em; font-weight: 650; }
-    h1 span { color: #c4f46d; }
-    .intro p { max-width: 590px; margin: 0; color: #a7b1a3; font-size: 16px; line-height: 1.65; }
-    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: stretch; }
-    .camera-panel, .guide { border: 1px solid #303a31; background: #191e1a; }
-    .panel-header {
-      min-height: 62px; display: flex; justify-content: space-between; align-items: center;
-      gap: 14px; padding: 15px 20px; border-bottom: 1px solid #303a31;
-    }
-    .panel-title { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 650; }
-    .panel-title::before { content: ""; width: 8px; height: 8px; background: #c4f46d; }
-    .panel-label { color: #8c988a; font-size: 10px; }
-    .status {
-      display: inline-flex; align-items: center; gap: 8px; padding: 8px 10px;
-      border: 1px solid #48533e; color: #e4d797; font-size: 11px; white-space: nowrap;
-    }
-    .status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-    .status[data-state="online"] { color: #c4f46d; }
-    .camera-body { padding: 16px; }
-    .camera-frame {
-      position: relative; overflow: hidden; background: #0d100e;
-      aspect-ratio: 4 / 3; display: grid; place-items: center;
-    }
-    .camera-placeholder { position: absolute; color: #748073; font-size: 13px; text-align: center; padding: 20px; }
-    #canvas-container { position: relative; z-index: 1; width: 100%; line-height: 0; }
-    #canvas-container canvas { display: block; width: 100% !important; height: auto !important; }
-    .camera-footer {
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
-      padding: 0 20px 18px; color: #8f9b8d; font-size: 11px;
-    }
-    .camera-footer strong { color: #d7dfd2; font-weight: 600; }
-    .guide { display: flex; flex-direction: column; }
-    .guide-content { padding: 24px 22px; }
-    .guide h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -.04em; }
-    .guide-intro { margin: 0 0 26px; color: #a7b1a3; font-size: 13px; line-height: 1.6; }
-    .steps { margin: 0; padding: 0; list-style: none; }
-    .steps li { display: grid; grid-template-columns: 31px 1fr; gap: 12px; padding: 16px 0; border-top: 1px solid #303a31; }
-    .step-number { color: #c4f46d; font-size: 11px; padding-top: 3px; }
-    .steps strong { display: block; margin-bottom: 5px; font-size: 13px; }
-    .steps p { margin: 0; color: #a7b1a3; font-size: 12px; line-height: 1.6; }
-    .legend { margin-top: auto; padding: 20px 22px; border-top: 1px solid #303a31; background: #151a16; }
-    .legend .panel-label { display: block; margin-bottom: 15px; }
-    .legend-items { display: flex; flex-wrap: wrap; gap: 18px; }
-    .legend-item { display: flex; align-items: center; gap: 8px; color: #d7dfd2; font-size: 12px; }
-    .dot { width: 9px; height: 9px; border-radius: 50%; }
-    .dot-right { background: #00ff96; }
-    .dot-left { background: #ff5050; }
-    .footer {
-      display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-      padding: 22px 0; border-top: 1px solid #303830; color: #8c988a; font-size: 10px;
-    }
-    @media (max-width: 800px) {
-      main { padding: 48px 0; }
-      .workspace { grid-template-columns: 1fr; }
-      .guide-content { padding-bottom: 10px; }
-    }
-    @media (max-width: 480px) {
-      .app { padding: 0 20px; }
-      .topbar { min-height: 68px; }
-      .topbar-label { max-width: 110px; line-height: 1.5; }
-      main { padding: 40px 0; }
-      .intro { margin-bottom: 30px; }
-      .intro p { font-size: 14px; }
-      .panel-header { padding: 14px; }
-      .camera-body { padding: 10px; }
-      .camera-footer { padding: 0 14px 14px; }
-    }
-  </style>
+  <meta name="theme-color" content="#10233e">
+  <title>Volvo | Entrenamiento de herramientas</title>
+  <link rel="stylesheet" href="/app.css">
+  <script type="module" src="/vendor/model-viewer.min.js"></script>
+  <script defer src="https://unpkg.com/ml5@1.4.0/dist/ml5.min.js"></script>
+  <script defer src="/training.js"></script>
+  <script defer src="/app.js"></script>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">✳</span> Hand<span>Lab</span></div>
-      <div class="topbar-label">Interacción por gestos<br>Experimento 01</div>
-    </header>
+  <header class="header">
+    <div class="header-inner">
+      <img class="logo" src="/assets/volvo-logo.png" alt="Volvo">
+      <div class="header-name"><span>TECHNICAL TRAINING</span><strong>Laboratorio de herramientas</strong></div>
+      <span class="header-tag">MOTORES DIÉSEL / 01</span>
+    </div>
+  </header>
 
-    <main>
-      <section class="intro" aria-labelledby="page-title">
-        <div class="eyebrow">Visión artificial / En tiempo real</div>
-        <h1 id="page-title">Tus manos son<br>el <span>control.</span></h1>
-        <p>Explora una nueva forma de interactuar. Usa tus manos para tomar y mover el objeto en pantalla.</p>
+  <main class="app">
+    <div class="heading">
+      <div><p class="eyebrow">ENTRENAMIENTO INTERACTIVO</p><h1>Aprende a elegir <span>la herramienta correcta.</span></h1></div>
+      <p class="heading-note">Explora, practica y pon a prueba tus conocimientos en un entorno interactivo.</p>
+    </div>
+
+    <nav class="progress" aria-label="Etapas del entrenamiento">
+      <span data-stage="learning"><b>01</b> Aprendizaje</span>
+      <span data-stage="cases"><b>02</b> Casos prácticos</span>
+      <span data-stage="results"><b>03</b> Evaluación</span>
+    </nav>
+
+    <div class="workspace">
+      <section class="training-panel" aria-label="Contenido del entrenamiento">
+        <div id="content"></div>
+        <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
       </section>
 
-      <div class="workspace">
-        <section class="camera-panel" aria-label="Vista de la cámara">
-          <div class="panel-header">
-            <div class="panel-title">Vista en vivo</div>
-            <div class="status" id="msg" role="status" aria-live="polite">Inicializando IA</div>
+      <aside class="camera-panel" aria-label="Control por gestos">
+        <div class="camera-heading"><div><p class="eyebrow">CONTROL POR GESTOS</p><h2>Tu espacio de trabajo</h2></div><span class="live-dot" aria-hidden="true"></span></div>
+        <div id="camera-slot">
+          <div class="camera-frame" id="camera-frame">
+            <video id="camera" autoplay playsinline muted></video>
+            <canvas id="hand-overlay" aria-label="Manos detectadas"></canvas>
+            <div class="camera-empty" id="camera-empty"><span class="camera-symbol" aria-hidden="true">⌁</span><span>Iniciando cámara</span></div>
+            <div class="camera-caption">VISTA EN ESPEJO</div>
           </div>
-          <div class="camera-body">
-            <div class="camera-frame">
-              <div class="camera-placeholder" id="p5_loading">Iniciando cámara y modelo de manos...</div>
-              <div id="canvas-container" role="img" aria-label="Video de la cámara con las manos detectadas y una pelota interactiva"></div>
-            </div>
-          </div>
-          <div class="camera-footer">
-            <span><strong>●</strong> Cámara en modo espejo</span>
-            <span>Permite el acceso a tu cámara para comenzar</span>
-          </div>
-        </section>
-
-        <aside class="guide" aria-labelledby="guide-title">
-          <div class="panel-header">
-            <div class="panel-title">Guía rápida</div>
-            <span class="panel-label">01 / 01</span>
-          </div>
-          <div class="guide-content">
-            <h2 id="guide-title">Listo para interactuar</h2>
-            <p class="guide-intro">Solo necesitas tus manos y un poco de espacio frente a la cámara.</p>
-            <ol class="steps">
-              <li><span class="step-number">01</span><div><strong>Muéstrale tus manos</strong><p>Colócalas dentro del encuadre para que el sistema las detecte.</p></div></li>
-              <li><span class="step-number">02</span><div><strong>Haz el gesto de pinza</strong><p>Junta el pulgar y el índice sobre la pelota naranja.</p></div></li>
-              <li><span class="step-number">03</span><div><strong>Mueve y suelta</strong><p>Desplaza la mano y separa los dedos para soltarla.</p></div></li>
-            </ol>
-          </div>
-          <div class="legend">
-            <span class="panel-label">Identificación de manos</span>
-            <div class="legend-items">
-              <div class="legend-item"><span class="dot dot-right" aria-hidden="true"></span>Derecha · verde</div>
-              <div class="legend-item"><span class="dot dot-left" aria-hidden="true"></span>Izquierda · rojo</div>
-            </div>
-          </div>
-        </aside>
-      </div>
-    </main>
-
-    <footer class="footer"><span>HandLab / Interacción intuitiva</span><span>Desarrollado con p5.js + ml5.js</span></footer>
-  </div>
-
-<script>
-  /**
-   * GLOBAL VARIABLES
-   * These act as the "memory" of our program.
-   */
-  let video;      // Holds the webcam feed
-  let handPose;   // Holds the ml5 HandPose model/engine
-  let hands = []; // An array (list) to store the data of any hands found
-  
-  // The 'ball' object stores its position, size, and which hand is holding it.
-  let ball = {
-    x: 320,
-    y: 240,
-    r: 40,
-    color: [255, 100, 0],
-    heldBy: null
-  };
-
-  /**
-   * PRELOAD
-   * This runs before everything else. We load the "brain" (AI model) here.
-   */
-  function preload() {
-    // We tell the AI to "flip" its coordinates so it feels like a mirror.
-    handPose = ml5.handPose({ flipped: true, maxHands: 2 });
-  }
-
-  /**
-   * SETUP
-   * Runs once. This sets up our "stage" (canvas) and "actors" (video).
-   */
-  function setup() {
-    createCanvas(640, 480).parent("canvas-container"); // Creates a 640x480 pixel work area
-    
-    // Start the webcam. { flipped: true } ensures the video matches the AI.
-    video = createCapture(VIDEO, { flipped: true });
-    video.size(640, 480);
-    video.hide(); // We hide the raw HTML video so we can draw it on the p5 canvas instead.
-
-    // detectStart tells the AI to keep looking for hands constantly.
-    // When it finds something, it puts the results into our 'hands' array.
-    handPose.detectStart(video, (results) => {
-      hands = results;
-      const status = document.getElementById("msg");
-      if (status.dataset.state !== "online") {
-        status.textContent = "Sistema activo";
-        status.dataset.state = "online";
-      }
-    });
-  }
-
-  /**
-   * DRAW
-   * This is a loop that runs ~60 times per second. 
-   * It handles drawing the frames and checking for interactions.
-   */
-  function draw() {
-    // 1. Draw the video background
-    image(video, 0, 0, width, height);
-
-    // Draw both hands, regardless of which one is holding the ball.
-    for (const hand of hands) {
-      drawSkeleton(hand);
-    }
-
-    if (ball.heldBy !== null) {
-      const holdingHand = hands.find((hand) => hand.handedness === ball.heldBy);
-      if (holdingHand) {
-        handleInteraction(holdingHand);
-      } else {
-        ball.heldBy = null;
-      }
-    }
-
-    if (ball.heldBy === null) {
-      for (const hand of hands) {
-        handleInteraction(hand);
-        if (ball.heldBy !== null) break;
-      }
-    }
-
-    // 3. Always draw the ball last (so it's on top of the video)
-    drawBall();
-  }
-
-  /**
-   * drawSkeleton(hand)
-   * Loops through the 21 keypoints provided by the AI and draws them.
-   */
-  function drawSkeleton(hand) {
-    for (let i = 0; i < hand.keypoints.length; i++) {
-      let kp = hand.keypoints[i];
-      if (hand.handedness === "Right") {
-        fill(0, 255, 150);
-      } else if (hand.handedness === "Left") {
-        fill(255, 80, 80);
-      } else {
-        fill(255);
-      }
-      noStroke();
-      circle(kp.x, kp.y, 10); // Draw a small circle at every joint
-    }
-  }
-
-  /**
-   * handleInteraction(hand)
-   * This is the "Brain" of the interaction.
-   */
-  function handleInteraction(hand) {
-    if (hand.handedness !== "Left" && hand.handedness !== "Right") return;
-
-    // Point 4 is the tip of the Thumb
-    // Point 8 is the tip of the Index Finger
-    let thumb = hand.keypoints[4];
-    let index = hand.keypoints[8];
-
-    // MATH: The Distance Formula. 
-    // It calculates how many pixels are between the thumb and index finger.
-    let d = dist(thumb.x, thumb.y, index.x, index.y);
-    
-    // The "Pinch Point" is the average position between the two fingers.
-    let pinchX = (thumb.x + index.x) / 2;
-    let pinchY = (thumb.y + index.y) / 2;
-
-    // PINCH LOGIC:
-    // If the distance (d) is less than 40 pixels, the user is "pinching."
-    if (d < 40) {
-      // Check if that pinch is happening inside the ball's area.
-      let distToBall = dist(pinchX, pinchY, ball.x, ball.y);
-      
-      // If we are already holding it, OR if we just started pinching near the ball:
-      if (ball.heldBy === hand.handedness || distToBall < ball.r) {
-        ball.heldBy = hand.handedness;
-        ball.x = pinchX;         // Move the ball to our finger position
-        ball.y = pinchY;
-      }
-    } else {
-      // If fingers spread apart, the pinch is broken.
-      if (ball.heldBy === hand.handedness) ball.heldBy = null;
-    }
-  }
-
-  /**
-   * drawBall()
-   * Renders the interactive ball with visual feedback.
-   */
-  function drawBall() {
-    push(); // Start a temporary drawing state
-    if (ball.heldBy !== null) {
-      fill(255, 255, 0); // Turn yellow when grabbed
-      stroke(255);       // Add a white outline
-      strokeWeight(4);
-    } else {
-      fill(ball.color);  // Standard orange
-      noStroke();
-    }
-    circle(ball.x, ball.y, ball.r * 2);
-    pop(); // Reset drawing state
-  }
-</script>
-	
+        </div>
+        <p id="camera-moved" class="camera-status" hidden>La vista de cámara está en el área del caso práctico.</p>
+        <p id="camera-status" class="camera-status" role="status" aria-live="polite">La cámara es opcional: también puedes usar clic o teclado.</p>
+        <button id="retry-camera" class="button secondary retry-camera" type="button" data-gesture hidden>Reintentar cámara</button>
+        <div class="gesture-guide">
+          <div><span class="gesture-icon">01</span><p><strong>Mueve la mano</strong><br>Para avanzar, haz pinza y suelta sobre un botón.</p></div>
+          <div><span class="gesture-icon">02</span><p><strong>Junta y arrastra</strong><br>Haz pinza sobre una herramienta y suéltala en la zona de respuesta.</p></div>
+        </div>
+        <div class="hand-legend"><span><i class="dot right"></i> Derecha</span><span><i class="dot left"></i> Izquierda</span></div>
+      </aside>
+    </div>
+    <p class="disclaimer">Contenido orientativo de entrenamiento, no una certificación ni un procedimiento oficial. Consulta los manuales y protocolos aplicables de Volvo.</p>
+  </main>
+  <div id="gesture-cursor" class="gesture-cursor" aria-hidden="true" hidden></div>
+  <div id="drag-label" class="drag-label" aria-hidden="true" hidden></div>
 </body>
 </html>
