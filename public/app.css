@@ -102,6 +102,15 @@ model-viewer { display: block; width: 100%; height: 100%; min-height: 140px; bac
 .result-score { display: inline-flex; align-items: baseline; gap: 8px; margin: 15px 0 0; color: #185383; }
 .result-score strong { font-size: 46px; letter-spacing: -.05em; }
 .result-score span { font-size: 14px; color: #607286; }
+.answer-feedback { max-width: 640px; }
+.answer-result { display: flex; align-items: flex-start; gap: 16px; padding: 20px; border: 1px solid; }
+.answer-result.correct { color: #17613d; background: #eaf7ef; border-color: #9acfb0; }
+.answer-result.incorrect { color: #8e2929; background: #fff0ef; border-color: #e0aaaa; }
+.answer-icon { display: grid; place-items: center; flex: 0 0 36px; height: 36px; border: 2px solid currentColor; border-radius: 50%; font-size: 22px; font-weight: 700; }
+.answer-result h2 { margin: 0 0 6px; font-size: 21px; }
+.answer-result p { margin: 0; font-size: 13px; line-height: 1.5; }
+.answer-detail { margin: 20px 0; color: #526a7e; font-size: 14px; line-height: 1.55; }
+.answer-detail strong { color: #173b60; }
 .review { list-style: none; padding: 0; margin: 22px 0; }
 .review li { padding: 12px 0; border-top: 1px solid #e5ebf0; font-size: 13px; line-height: 1.5; }
 .review strong { color: #173b60; } .review p { margin: 4px 0 0; font-size: 12px; }
@@ -110,14 +119,14 @@ model-viewer { display: block; width: 100%; height: 100%; min-height: 140px; bac
 .gesture-cursor.left { border-color: #ff5050; }
 .gesture-cursor.pinching { background: #fff; }
 .drag-label { position: fixed; z-index: 21; pointer-events: none; transform: translate(15px, 15px); padding: 8px 12px; background: #173b60; color: white; font-size: 12px; }
-body:has(.case-board) .heading { display: none; }
-body:has(.case-board) .app { padding-top: 14px; }
-body:has(.case-board) .progress { margin-bottom: 8px; }
-body:has(.case-board) .training-panel { padding: 20px; min-height: 0; }
+body:has(.case-board, .answer-feedback) .heading { display: none; }
+body:has(.case-board, .answer-feedback) .app { padding-top: 14px; }
+body:has(.case-board, .answer-feedback) .progress { margin-bottom: 8px; }
+body:has(.case-board, .answer-feedback) .training-panel { padding: 20px; min-height: 0; }
 body:has(.case-board) .section-head { margin-bottom: 10px; }
 body:has(.case-board) .section-head p:not(.eyebrow) { margin: 8px 0 0; }
 body:has(.case-board) .hint { margin: 8px 0 12px; }
-body:has(.case-board) .camera-panel { order: 0; }
+body:has(.case-board, .answer-feedback) .camera-panel { order: 0; }
 @media (max-width: 950px) {
   .workspace { grid-template-columns: minmax(0, 1fr) 280px; }
   .lesson-layout { grid-template-columns: 1fr; }
@@ -137,10 +146,10 @@ body:has(.case-board) .camera-panel { order: 0; }
   .progress span { padding: 12px 8px; font-size: 10px; }
   .progress b { display: block; margin: 0 0 4px; }
   .training-panel { padding: 20px; min-height: 0; }
-  body:has(.case-board) .header-inner { padding-top: 8px; padding-bottom: 8px; }
-  body:has(.case-board) .app { padding-top: 8px; }
-  body:has(.case-board) .progress span { padding: 8px; }
-  body:has(.case-board) .training-panel { padding: 14px; }
+  body:has(.case-board, .answer-feedback) .header-inner { padding-top: 8px; padding-bottom: 8px; }
+  body:has(.case-board, .answer-feedback) .app { padding-top: 8px; }
+  body:has(.case-board, .answer-feedback) .progress span { padding: 8px; }
+  body:has(.case-board, .answer-feedback) .training-panel { padding: 14px; }
   body:has(.case-board) .section-head { display: block; position: relative; }
   body:has(.case-board) .section-head .eyebrow { padding-right: 60px; }
   body:has(.case-board) .section-head h2 { font-size: 20px; }

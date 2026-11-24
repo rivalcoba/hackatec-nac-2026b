@@ -14,11 +14,23 @@ test("training introduces each tool before the cases and evaluates all answers",
   assert.equal(game.state().stage, "cases");
   assert.equal(game.answer("invalid"), false);
   assert.equal(game.state().caseIndex, 0);
-  for (const scenario of scenarios) assert.equal(game.answer(scenario.answer), true);
+  for (const [index, scenario] of scenarios.entries()) {
+    const selected = index === 1 ? "vernier" : scenario.answer;
+    assert.equal(game.answer(selected), true);
+    assert.equal(game.state().stage, "feedback");
+    assert.deepEqual(game.state().answers[index], { selected, correct: index !== 1 });
+    assert.equal(game.answer(scenario.answer), false);
+    assert.equal(game.state().answers.length, index + 1);
+    assert.equal(game.result(), null);
+    game.nextCase();
+    assert.equal(game.state().stage, index === scenarios.length - 1 ? "results" : "cases");
+  }
   assert.equal(game.state().stage, "results");
   assert.equal(game.answer("allen"), false);
-  assert.equal(game.result().score, 4);
-  assert.equal(game.result().percent, 100);
+  assert.equal(game.result().score, 3);
+  assert.equal(game.result().percent, 75);
+  game.nextCase();
+  assert.equal(game.state().stage, "results");
   game.reset();
   assert.equal(game.state().stage, "intro");
   assert.deepEqual(game.state().answers, []);

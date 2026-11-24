@@ -17,6 +17,6 @@ La aplicación solicita acceso a la cámara al abrirse. Para los gestos se neces
 
 El cursor sigue la pinza de la mano: junta y separa el pulgar y el índice sobre un botón para activarlo. En los casos, coloca la pinza sobre una herramienta (puedes cerrarla antes de llegar), arrástrala a la zona de respuesta y suéltala. Acerca el cursor al borde superior o inferior para desplazarte. Con clic o teclado, selecciona una herramienta y confirma en la zona de respuesta.
 
-Hay un intento para cada uno de los cuatro casos. La evaluación muestra los aciertos y una recomendación orientativa; los resultados solo se mantienen durante la sesión actual.
+Hay un intento para cada uno de los cuatro casos. Después de cada respuesta se muestra si fue correcta y una explicación; puedes continuar con el siguiente caso mediante gestos, clic o teclado. La evaluación final muestra los aciertos y una recomendación orientativa; los resultados solo se mantienen durante la sesión actual.
 
 Ejecuta las pruebas con `npm test`.

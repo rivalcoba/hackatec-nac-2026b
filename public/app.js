@@ -57,7 +57,7 @@
     const state = game.state();
     cameraMoved.hidden = state.stage !== "cases";
     for (const item of document.querySelectorAll("[data-stage]")) {
-      const active = item.dataset.stage === state.stage;
+      const active = item.dataset.stage === state.stage || (state.stage === "feedback" && item.dataset.stage === "cases");
       item.classList.toggle("active", active);
       if (active) item.setAttribute("aria-current", "step");
       else item.removeAttribute("aria-current");
@@ -95,6 +95,23 @@
           </div>
         </div>`;
       document.getElementById("case-camera-slot").appendChild(cameraFrame);
+    } else if (state.stage === "feedback") {
+      const answer = state.answers[state.answers.length - 1];
+      const scenario = scenarios[state.answers.length - 1];
+      content.innerHTML = `<div class="answer-feedback">
+        <p class="eyebrow">02 / CASO ${state.answers.length} DE ${scenarios.length}</p>
+        <div class="answer-result ${answer.correct ? "correct" : "incorrect"}" role="status" tabindex="-1">
+          <span class="answer-icon" aria-hidden="true">${answer.correct ? "✓" : "×"}</span>
+          <div><h2>${answer.correct ? "¡Respuesta correcta!" : "Respuesta incorrecta"}</h2>
+          <p>${answer.correct ? "Identificaste la herramienta adecuada." : "Repasemos la herramienta adecuada para este caso."}</p></div>
+        </div>
+        <div class="answer-detail">
+          <p><strong>Tu respuesta:</strong> ${toolById(answer.selected).name}</p>
+          <p><strong>Respuesta correcta:</strong> ${toolById(scenario.answer).name}</p>
+          <p>${scenario.explanation}</p>
+        </div>
+        <button class="button" type="button" data-action="next-case" data-gesture>${state.answers.length === scenarios.length ? "Ver evaluación →" : "Siguiente caso →"}</button>
+      </div>`;
     } else {
       const result = game.result();
       content.innerHTML = `<div class="result">
@@ -109,6 +126,7 @@
       </div>`;
     }
     watchModels();
+    if (state.stage === "feedback") content.querySelector(".answer-result")?.focus({ preventScroll: true });
   }
 
   function selectTool(id) {
@@ -150,6 +168,10 @@
         break;
       case "next":
         game.nextLesson();
+        render();
+        break;
+      case "next-case":
+        game.nextCase();
         render();
         break;
       case "restart":

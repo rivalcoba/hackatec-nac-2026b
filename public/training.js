@@ -86,8 +86,12 @@
         if (stage !== "cases" || !tools.some((tool) => tool.id === toolId)) return false;
         const scenario = scenarios[answers.length];
         answers.push({ selected: toolId, correct: toolId === scenario.answer });
-        if (answers.length === scenarios.length) stage = "results";
+        stage = "feedback";
         return true;
+      },
+      nextCase() {
+        if (stage !== "feedback") return;
+        stage = answers.length === scenarios.length ? "results" : "cases";
       },
       reset() {
         stage = "intro";
