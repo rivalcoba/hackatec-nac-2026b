@@ -50,6 +50,25 @@
     }
   }
 
+  function drawResultsChart(result) {
+    const chart = content.querySelector(".results-chart");
+    if (typeof d3 === "undefined") {
+      chart.hidden = true;
+      content.querySelector(".chart-error").hidden = false;
+      console.error("No se pudo cargar D3 para mostrar la gráfica de resultados.");
+      return;
+    }
+
+    const values = [result.score, result.total - result.score];
+    const arc = d3.arc().innerRadius(76).outerRadius(98);
+    const segments = d3.pie().sort(null).value((value) => value)(values);
+    d3.select(chart).selectAll("path")
+      .data(segments.filter((segment) => segment.value > 0))
+      .join("path")
+      .attr("d", arc)
+      .attr("fill", (segment) => segment.index === 0 ? "#65e5bd" : "#ffad88");
+  }
+
   function render() {
     gestures.cancel();
     selectedTool = null;
@@ -117,8 +136,23 @@
       const result = game.result();
       content.innerHTML = `<div class="result">
         <p class="eyebrow">03 / EVALUACIÓN COMPLETADA</p><h2>Tu resultado</h2>
-        <div class="result-score"><strong>${result.percent}%</strong><span>${result.score} de ${result.total} respuestas correctas</span></div>
-        <p>${result.recommendation}</p>
+        <div class="results-dashboard">
+          <div class="results-visual">
+            <svg class="results-chart" viewBox="-110 -110 220 220" aria-hidden="true"></svg>
+            <div class="result-score"><strong>${result.percent}%</strong><span>DE ACIERTOS</span></div>
+          </div>
+          <div class="results-summary">
+            <p class="results-kicker">TU DESEMPEÑO</p>
+            <h3>${result.score} de ${result.total} respuestas correctas</h3>
+            <p class="chart-error" hidden>No se pudo cargar la gráfica. Tus resultados están disponibles a continuación.</p>
+            <ul class="results-legend" role="list">
+              <li><span class="legend-marker correct-marker" aria-hidden="true"></span><span>Aciertos</span><strong>${result.score}</strong></li>
+              <li><span class="legend-marker incorrect-marker" aria-hidden="true"></span><span>Por repasar</span><strong>${result.total - result.score}</strong></li>
+            </ul>
+            <p class="results-recommendation">${result.recommendation}</p>
+          </div>
+        </div>
+        <h3 class="review-heading">Detalle por caso</h3>
         <ul class="review">${state.answers.map((answer, index) => {
           const scenario = scenarios[index];
           return `<li><strong>Caso ${index + 1} · ${answer.correct ? "Correcto" : "Por repasar"}</strong><p>Tu respuesta: ${toolById(answer.selected).name}. Respuesta esperada: ${toolById(scenario.answer).name}.</p><p>${scenario.explanation}</p></li>`;
@@ -127,6 +161,7 @@
       </div>`;
     }
     watchModels();
+    if (state.stage === "results") drawResultsChart(game.result());
     if (state.stage === "feedback") content.querySelector(".answer-result")?.focus({ preventScroll: true });
   }
 

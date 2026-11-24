@@ -7,6 +7,9 @@ const PORT = process.env.PORT || 3000;
 app.get('/vendor/model-viewer.min.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'node_modules/@google/model-viewer/dist/model-viewer.min.js'));
 });
+app.get('/vendor/d3.min.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'node_modules/d3/dist/d3.min.js'));
+});
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.listen(PORT, () => {

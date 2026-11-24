@@ -6,6 +6,7 @@ const vm = require("node:vm");
 const Training = require("../public/training");
 
 test("simulated pinches advance lessons and drag a tool into the case board", async () => {
+  const d3 = await import("d3");
   const script = readFileSync(path.join(__dirname, "../public/app.js"), "utf8");
   let nextHands = [];
   let detectionError;
@@ -33,7 +34,14 @@ test("simulated pinches advance lessons and drag a tool into the case board", as
     addEventListener(name, callback) { viewerEvents[name] = callback; },
   };
   content.querySelectorAll = (selector) => selector === "model-viewer" && html.includes("<model-viewer") ? [viewer] : [];
-  content.querySelector = (selector) => selector === "[data-drop-zone]" && html.includes("data-drop-zone") ? elements.drop : null;
+  const chart = plain();
+  const chartError = plain();
+  content.querySelector = (selector) => {
+    if (selector === "[data-drop-zone]" && html.includes("data-drop-zone")) return elements.drop;
+    if (selector === ".results-chart") return chart;
+    if (selector === ".chart-error") return chartError;
+    return null;
+  };
   content.contains = () => true;
   content.addEventListener = (name, callback) => { if (name === "click") content.onClick = callback; };
   const button = (dataset, drop = false) => ({
@@ -75,6 +83,20 @@ test("simulated pinches advance lessons and drag a tool into the case board", as
   const track = { addEventListener(name, callback) { if (name === "ended") onTrackEnded = callback; }, stop() { trackStopped = true; } };
   const context = vm.createContext({
     Training, document, console: { error() {} },
+    d3: {
+      arc: d3.arc,
+      pie: d3.pie,
+      select(element) {
+        assert.equal(element, chart);
+        const selection = {
+          selectAll() { return this; },
+          data(values) { chart.segments = values; chart.attributes = {}; return this; },
+          join() { return this; },
+          attr(name, value) { chart.attributes[name] = chart.segments.map(value); return this; },
+        };
+        return selection;
+      },
+    },
     navigator: { mediaDevices: { getUserMedia: async () => ({ getTracks: () => [track], getVideoTracks: () => [track] }) } },
     ml5: { handPose: async () => ({ async detect(source) { assert.equal(source, detectionCanvas); if (detectionError) throw detectionError; return nextHands; } }) },
     customElements: { get: () => true },
@@ -180,6 +202,35 @@ test("simulated pinches advance lessons and drag a tool into the case board", as
   button({ action: "next-case" }).click();
   assert.match(html, /Tu resultado/);
   assert.match(html, /3 de 4 respuestas correctas/);
+  assert.deepEqual(Array.from(chart.segments, (segment) => segment.value), [3, 1]);
+  assert.deepEqual(Array.from(chart.attributes.fill), ["#65e5bd", "#ffad88"]);
+  assert.ok(chart.attributes.d.every((path) => path && !path.includes("NaN")));
+
+  function finishWithAnswers(selected) {
+    button({ action: "restart" }).click();
+    button({ action: "start" }).click();
+    for (let i = 0; i < 4; i += 1) button({ action: "next" }).click();
+    for (const id of selected) {
+      button({ tool: id }).click();
+      elements.drop.click();
+      button({ action: "next-case" }).click();
+    }
+  }
+  finishWithAnswers(["allen", "vernier", "allen", "allen"]);
+  assert.match(html, /0 de 4 respuestas correctas/);
+  assert.deepEqual(Array.from(chart.segments, (segment) => segment.value), [4]);
+  assert.deepEqual(Array.from(chart.attributes.fill), ["#ffad88"]);
+  assert.ok(!chart.attributes.d[0].includes("NaN"));
+  finishWithAnswers(["vernier", "allen", "pipe", "bolt"]);
+  assert.match(html, /4 de 4 respuestas correctas/);
+  assert.deepEqual(Array.from(chart.segments, (segment) => segment.value), [4]);
+  assert.deepEqual(Array.from(chart.attributes.fill), ["#65e5bd"]);
+  assert.ok(!chart.attributes.d[0].includes("NaN"));
+  context.d3 = undefined;
+  finishWithAnswers(["allen", "vernier", "allen", "allen"]);
+  assert.equal(chart.hidden, true);
+  assert.equal(chartError.hidden, false);
+  assert.match(html, /0 de 4 respuestas correctas/);
   onTrackEnded();
   assert.equal(trackStopped, true);
   assert.match(elements["camera-status"].textContent, /cámara se desconectó/);
