@@ -1,4 +1,8 @@
 (function (root) {
+  function findRightHand(hands) {
+    return hands.find(hand => hand.handedness === 'Right') || null;
+  }
+
   function handState(hand, width, height) {
     const thumb = hand.keypoints[4];
     const index = hand.keypoints[8];
@@ -43,9 +47,10 @@
     return { update };
   }
 
-  if (typeof module !== 'undefined') module.exports = { createInteraction, handState };
+  if (typeof module !== 'undefined') module.exports = { createInteraction, findRightHand, handState };
   else {
     root.createInteraction = createInteraction;
+    root.findRightHand = findRightHand;
     root.handState = handState;
   }
 })(globalThis);

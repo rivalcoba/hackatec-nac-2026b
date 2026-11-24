@@ -1,6 +1,14 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { createInteraction, handState } = require('../interaction');
+const { createInteraction, findRightHand, handState } = require('../interaction');
+
+test('only the right hand is selected from detection results', () => {
+  const leftHand = { handedness: 'Left' };
+  const rightHand = { handedness: 'Right' };
+  assert.equal(findRightHand([leftHand, rightHand]), rightHand);
+  assert.equal(findRightHand([leftHand]), null);
+  assert.equal(findRightHand([]), null);
+});
 
 test('hand state normalizes and clamps midpoint coordinates and detects a pinch', () => {
   const keypoints = [];

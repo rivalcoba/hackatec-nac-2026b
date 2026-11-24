@@ -369,13 +369,13 @@
       <section class="intro" aria-labelledby="page-title">
         <p class="eyebrow">Seguimiento en vivo</p>
         <h1 id="page-title">Mueve la esfera con tus manos</h1>
-        <p class="description">La cámara detecta tu mano en tiempo real. Junta el pulgar y el índice para tomar la esfera y moverla.</p>
+        <p class="description">La cámara detecta únicamente tu mano derecha. Junta el pulgar y el índice para tomar la esfera y moverla.</p>
 
         <div class="status-card">
           <div class="status-row">
             <span class="status-light" id="model-indicator" data-state="loading" aria-hidden="true"></span>
             <div class="status-copy">
-              <h2>Detección de mano</h2>
+              <h2>Mano derecha</h2>
               <p id="msg" role="status" aria-live="polite" aria-atomic="true">Iniciando el modelo…</p>
             </div>
           </div>
@@ -392,7 +392,7 @@
           <h2 id="instructions-title">Cómo empezar</h2>
           <ol>
             <li>Permite el acceso a la cámara cuando el navegador lo solicite.</li>
-            <li>Mantén la mano dentro del encuadre de la cámara.</li>
+            <li>Mantén la mano derecha dentro del encuadre de la cámara.</li>
             <li>Junta el pulgar y el índice sobre la esfera para moverla; sepáralos para soltarla.</li>
           </ol>
           <p class="help-note">Si el modelo no inicia, comprueba tu conexión a internet y recarga la página.</p>
@@ -430,7 +430,7 @@
   function updateHandStatus(detected) {
     if (lastHandState === detected) return;
     lastHandState = detected;
-    document.getElementById("msg").textContent = detected ? "Mano detectada" : "Esperando una mano";
+    document.getElementById("msg").textContent = detected ? "Mano derecha detectada" : "Buscando mano derecha";
     document.getElementById("model-indicator").dataset.state = "ready";
   }
 
@@ -509,7 +509,8 @@
     // detectStart tells the AI to keep looking for hands constantly.
     // When it finds something, it puts the results into our 'hands' array.
     handPose.detectStart(video, (results) => {
-      hands = results;
+      const rightHand = findRightHand(results);
+      hands = rightHand ? [rightHand] : [];
       lastDetection = Date.now();
       updateHandStatus(hands.length > 0);
     });
