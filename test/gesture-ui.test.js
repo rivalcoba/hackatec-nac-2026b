@@ -145,7 +145,8 @@ test("simulated pinches advance lessons and drag a tool into the case board", as
   await feed([scaledHand(55, 150)]);
   target = button({ tool: "vernier" });
   await feed([scaledHand(55, 150)]);
-  assert.equal(elements["drag-label"].hidden, false);
+  assert.equal(elements["drag-ghost"].hidden, false);
+  assert.match(elements["drag-ghost"].innerHTML, /<model-viewer src="[^"]*vernier[^"]*"/);
   target = elements.drop;
   await feed([scaledHand(85, 150)]);
   assert.match(html, /1 \/ 4/);

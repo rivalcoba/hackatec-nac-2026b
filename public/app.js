@@ -12,7 +12,8 @@
   const cameraStatus = document.getElementById("camera-status");
   const retryCamera = document.getElementById("retry-camera");
   const cursor = document.getElementById("gesture-cursor");
-  const dragLabel = document.getElementById("drag-label");
+  const dragGhost = document.getElementById("drag-ghost");
+  let draggedCard = null;
   const detectionCanvas = document.createElement("canvas");
   const detectionContext = detectionCanvas.getContext("2d");
   let selectedTool = null;
@@ -197,15 +198,18 @@
 
   function positionDrag(hand) {
     const point = screenPoint(hand);
-    dragLabel.style.left = `${point.x}px`;
-    dragLabel.style.top = `${point.y}px`;
+    dragGhost.style.left = `${point.x}px`;
+    dragGhost.style.top = `${point.y}px`;
     const zone = content.querySelector("[data-drop-zone]");
     if (zone) zone.classList.toggle("over", !!targetAt(hand)?.closest("[data-drop-zone]"));
   }
 
   function clearDrag() {
     activeHand = null;
-    dragLabel.hidden = true;
+    dragGhost.hidden = true;
+    dragGhost.innerHTML = "";
+    draggedCard?.classList.toggle("dragging", false);
+    draggedCard = null;
     content.querySelector("[data-drop-zone]")?.classList.remove("over");
   }
 
@@ -215,8 +219,11 @@
       if (!element || !content.contains(element)) return null;
       activeHand = hand.handedness;
       if (element.dataset.tool) {
-        dragLabel.textContent = toolById(element.dataset.tool).name;
-        dragLabel.hidden = false;
+        const tool = toolById(element.dataset.tool);
+        dragGhost.innerHTML = `<model-viewer src="${tool.model}" alt="" auto-rotate aria-hidden="true" tabindex="-1"></model-viewer><span>${tool.name}</span>`;
+        dragGhost.hidden = false;
+        draggedCard = element;
+        element.classList.toggle("dragging", true);
         positionDrag(hand);
         return { type: "tool", id: element.dataset.tool };
       }
