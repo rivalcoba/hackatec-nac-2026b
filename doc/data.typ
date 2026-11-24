@@ -4,37 +4,37 @@
   program: "InnovatecNM",
   document-type: "Memoria Técnica",
 
-  title: "PIANITECH",
+  title: "VOLVO-DIDASTEK",
   subtitle: "Telemetría y Seguridad Industrial Adaptativa",
 
-  reto: "Reto 2 Tecnologías Emergentes",
-  tematica: "Telemetría, Teleprocesos y Sistemas de Adquisición de Datos",
+  reto: "Software Inteligente y Tecnologías Emergentes",
+  tematica: " Sistema Inteligente de Entrenamiento para Autobuses",
 
   students: (
     (
       name: "Martinez Sanchez Angel Armando",
       program: "ITICS",
-      email: "L221L221L221L221130268302683026830268@institucional.mx",
+      email: "L221130268@gamadero.tecnm.mx",
     ),
-    (
-      name: "Mendoza Rodriguez Heber Otoniel",
-      program: "ITICS",
-      email: "L221130L221130L221130L221130271717171@institucional.mx",
-    ),
+    // (
+    //   name: "Mendoza Rodriguez Heber Otoniel",
+    //   program: "ITICS",
+    //   email: "L221130L221130L221130L221130271717171@institucional.mx",
+    // ),
     (
       name: "Romero Angeles Ivonne Alejandra",
       program: "ILOG",
-      email: "L2411L2411L2411L241130110011001100110@institucional.mx",
+      email: "L241130110@gamadero.tecnm.mx",
     ),
     (
       name: "Parra Perez Ruben",
       program: "ITICS",
-      email: "LB15253581LB15253581LB15253581LB15253581@institucional.mx",
+      email: "LB15253581@gamadero.tecnm.mx",
     ),
     (
       name: "Urbina Cruz Roberto Alexis",
       program: "ITICS",
-      email: "L221130301L221130301L221130301L221130301@institucional.mx",
+      email: "L221130301@gamadero.tecnm.mx",
     ),
   ),
   student: "Halcones",
@@ -45,7 +45,7 @@
 
   professor: "Ivan Rivalcoba",
   
-  date: "30 de Septiembre de 2026",
-  city: "CDMX",
-  period: "GAM",
+  date: "24 de noviembre de 2026",
+  city: "TecNM",
+  period: "Campus Puebla",
 )

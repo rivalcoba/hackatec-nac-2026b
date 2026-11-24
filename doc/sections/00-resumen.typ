@@ -2,16 +2,20 @@
 
 = Resumen
 
-*PianiTech* (@logo-pianitech) es un kit de retrofitting para instalar sistemas de vigilancia remota en talleres y PYMES con infraestructura brownfield. Integra sensores, comunicación MQTT y un cliente desarrollado en Python para supervisar máquinas rotatorias, presencia de gas o fuego y niveles de líquidos. Además, organiza los datos en ventanas de operación para detectar comportamientos anómalos mediante Isolation Forest.
+*Didastek* (@logo-didastek) es una propuesta de capacitación interactiva para técnicos encargados del diagnóstico y mantenimiento de autobuses Volvo. La solución combina una plataforma digital que funciona sin conexión a internet con un guante sensorial que proporciona retroalimentación mediante vibraciones.
+
+A través de casos prácticos y simulaciones de fallas en motores, los técnicos analizan situaciones, identifican componentes y seleccionan posibles soluciones. La plataforma ofrece explicaciones ante las respuestas incorrectas e incorpora elementos de gamificación, como puntos, niveles y desafíos, para reforzar el aprendizaje y evaluar el progreso.
+
+Con esta propuesta se busca ofrecer una experiencia de formación práctica, accesible e interactiva que contribuya al desarrollo de habilidades para reconocer componentes e identificar fallas.
 
 #figure(
-  image("../assets/Piantech-Logo.png",width: 60mm),
-  caption: [Logo de PianiTech]
-)<logo-pianitech>
+  image("../assets/didastek-logo.jpg",width: 123mm),
+  caption: [Imagen gráfica de la solución Didastek]
+)<logo-didastek>
 
 \
 
 #note-box(
   [Palabras clave],
-  [Retrofitting, PYMES brownfield, vigilancia remota, telemetría, MQTT, Internet de las cosas, adquisición de datos, detección de anomalías, Isolation Forest y Python.],
+  [Capacitación técnica, diagnóstico de fallas, guante sensorial, retroalimentación háptica, gamificación],
 )
