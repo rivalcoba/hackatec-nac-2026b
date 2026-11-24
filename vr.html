@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manipulación con la mano</title>
+  <script src="https://aframe.io/releases/1.8.0/aframe.min.js"></script>
+  <script src="/interaction.js"></script>
+  <style>
+    #status { position: fixed; z-index: 2; top: 0; left: 0; margin: 0; padding: 0.5rem; color: white; background: #222c; font: 14px sans-serif; }
+  </style>
+</head>
+<body>
+  <p id="status" role="status">Conectando con la PC...</p>
+  <a-scene background="color: #263345">
+    <a-camera position="0 1.6 0"></a-camera>
+    <a-sphere id="object" position="0 1.5 -3" radius="0.25" color="#ff6400"></a-sphere>
+    <a-sphere id="cursor" position="0 1.5 -3" radius="0.045" color="#00ff96" visible="false"></a-sphere>
+    <a-plane rotation="-90 0 0" width="12" height="12" color="#465b69"></a-plane>
+    <a-sky color="#263345"></a-sky>
+  </a-scene>
+  <script>
+    const interaction = createInteraction();
+    const object = document.getElementById('object');
+    const cursor = document.getElementById('cursor');
+    const status = document.getElementById('status');
+    let lastMessage = 0;
+
+    function render(input) {
+      const state = interaction.update(input);
+      object.setAttribute('position', { ...state.object, z: -3 });
+      object.setAttribute('color', state.held ? '#ffff00' : '#ff6400');
+      cursor.setAttribute('visible', !!state.cursor);
+      if (state.cursor) cursor.setAttribute('position', { ...state.cursor, z: -2.65 });
+    }
+
+    function connect() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socket = new WebSocket(`${protocol}//${location.host}/viewer`);
+      socket.addEventListener('open', () => { status.textContent = 'Conectado; esperando la mano de la PC'; });
+      socket.addEventListener('message', event => {
+        const input = JSON.parse(event.data);
+        lastMessage = Date.now();
+        status.textContent = input.present ? 'Mano detectada' : 'Sin mano detectada';
+        render(input);
+      });
+      socket.addEventListener('error', () => { status.textContent = 'Error de conexión con la PC'; });
+      socket.addEventListener('close', () => {
+        render({ present: false });
+        status.textContent = 'Desconectado; intentando reconectar...';
+        setTimeout(connect, 1500);
+      });
+    }
+    setInterval(() => {
+      if (lastMessage && Date.now() - lastMessage > 1500) {
+        render({ present: false });
+        status.textContent = 'Sin señal de seguimiento';
+        lastMessage = 0;
+      }
+    }, 250);
+    connect();
+  </script>
+</body>
+</html>

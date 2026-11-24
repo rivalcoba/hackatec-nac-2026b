@@ -5,6 +5,7 @@
   <title>p5.js Hand Tracking Lesson</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.js"></script>
   <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
+  <script src="interaction.js"></script>
   <style>
     body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     canvas { border: 5px solid #444; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -16,7 +17,7 @@
   <div id="ui">
     <h1 id="msg">Initialising AI...</h1>
     <p>Target: Move the orange ball by pinching your thumb and index finger.</p>
-
+    <p id="connection">Connecting to VR server...</p>
   </div>
 
 <script>
@@ -27,6 +28,40 @@
   let video;      // Holds the webcam feed
   let handPose;   // Holds the ml5 HandPose model/engine
   let hands = []; // An array (list) to store the data of any hands found
+  let lastDetection = 0;
+  let lastSent = 0;
+  let socket;
+
+  function connectVR() {
+    if (location.protocol !== "http:" && location.protocol !== "https:") {
+      document.getElementById("connection").innerText = "Start the server to connect to VR.";
+      return;
+    }
+    const protocol = location.protocol === "https:" ? "wss:" : "ws:";
+    socket = new WebSocket(`${protocol}//${location.host}/tracking`);
+    socket.addEventListener("open", () => {
+      document.getElementById("connection").innerText = "VR server connected.";
+    });
+    socket.addEventListener("error", () => {
+      document.getElementById("connection").innerText = "VR server connection error.";
+    });
+    socket.addEventListener("close", event => {
+      document.getElementById("connection").innerText =
+        event.reason || "VR server disconnected; reconnecting...";
+      setTimeout(connectVR, 1500);
+    });
+  }
+
+  function sendHand() {
+    if (!socket || socket.readyState !== WebSocket.OPEN || millis() - lastSent < 33) return;
+    lastSent = millis();
+    const hand = Date.now() - lastDetection < 1000 ? hands[0] : null;
+    if (!hand) {
+      socket.send(JSON.stringify({ present: false }));
+      return;
+    }
+    socket.send(JSON.stringify(handState(hand, width, height)));
+  }
   
   // The 'ball' object: storing its state (position, size, and if it's "grabbed")
   let ball = {
@@ -52,6 +87,7 @@
    */
   function setup() {
     createCanvas(640, 480); // Creates a 640x480 pixel work area
+    connectVR();
     
     // Start the webcam. { flipped: true } ensures the video matches the AI.
     video = createCapture(VIDEO, { flipped: true });
@@ -62,6 +98,7 @@
     // When it finds something, it puts the results into our 'hands' array.
     handPose.detectStart(video, (results) => {
       hands = results;
+      lastDetection = Date.now();
       document.getElementById("msg").innerText = "AI System: ONLINE";
     });
   }
@@ -88,6 +125,7 @@
 
     // 3. Always draw the ball last (so it's on top of the video)
     drawBall();
+    sendHand();
   }
 
   /**

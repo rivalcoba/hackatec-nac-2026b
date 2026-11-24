@@ -1,0 +1,42 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { spawn } = require('node:child_process');
+const { once } = require('node:events');
+const { WebSocket } = require('ws');
+
+test('server delivers hand state and releases viewers on disconnect', async t => {
+  const server = spawn(process.execPath, ['server.js'], {
+    cwd: require('node:path').join(__dirname, '..'),
+    env: { ...process.env, PORT: '0', TLS_KEY: '', TLS_CERT: '' },
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+  t.after(() => server.kill());
+  const [chunk] = await once(server.stdout, 'data');
+  const match = chunk.toString().match(/port (\d+)/);
+  assert.ok(match, 'server did not report its port');
+  const base = `http://127.0.0.1:${match[1]}`;
+  assert.equal((await fetch(`${base}/vr`)).status, 200);
+  assert.equal((await fetch(`${base}/missing`)).status, 404);
+
+  const viewer = new WebSocket(base.replace('http:', 'ws:') + '/viewer');
+  t.after(() => viewer.terminate());
+  const initial = once(viewer, 'message');
+  assert.deepEqual(JSON.parse((await initial)[0]), { present: false });
+  const tracker = new WebSocket(base.replace('http:', 'ws:') + '/tracking');
+  t.after(() => tracker.terminate());
+  await once(tracker, 'open');
+  const delivered = once(viewer, 'message');
+  tracker.send(JSON.stringify({ present: true, x: 0.5, y: 0.25, pinched: true }));
+  assert.deepEqual(JSON.parse((await delivered)[0]), { present: true, x: 0.5, y: 0.25, pinched: true });
+
+  const secondTracker = new WebSocket(base.replace('http:', 'ws:') + '/tracking');
+  t.after(() => secondTracker.terminate());
+  const [code] = await once(secondTracker, 'close');
+  assert.equal(code, 1008);
+
+  const lost = once(viewer, 'message');
+  const trackerClosed = once(tracker, 'close');
+  tracker.send(JSON.stringify({ present: true, x: 2, y: 0.25, pinched: true }));
+  assert.deepEqual(JSON.parse((await lost)[0]), { present: false });
+  assert.equal((await trackerClosed)[0], 1008);
+});
