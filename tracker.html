@@ -1,23 +1,417 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>p5.js Hand Tracking Lesson</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10151c">
+  <title>Seguimiento de mano | Manipulación con la mano</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.js"></script>
   <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
   <script src="interaction.js"></script>
   <style>
-    body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    canvas { border: 5px solid #444; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    #ui { position: absolute; top: 20px; text-align: center; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #10151c;
+      color: #f3f5f7;
+      font-synthesis: none;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-inline-size: 320px;
+      min-block-size: 100dvh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 75% 0%, rgb(33 59 71 / 42%), transparent 48rem),
+        #10151c;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    a:focus-visible {
+      outline: 3px solid #86d6df;
+      outline-offset: 4px;
+    }
+
+    .page-shell {
+      inline-size: min(100%, 1320px);
+      margin-inline: auto;
+      padding: 20px clamp(20px, 4vw, 52px) 36px;
+    }
+
+    .topbar {
+      display: flex;
+      min-block-size: 56px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-block-end: 1px solid #26323a;
+    }
+
+    .brand {
+      display: inline-flex;
+      min-block-size: 44px;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.78rem;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      inline-size: 34px;
+      aspect-ratio: 1;
+      place-items: center;
+      border: 1px solid #4d747b;
+      border-radius: 11px;
+      color: #86d6df;
+      font-size: 1.15rem;
+      letter-spacing: 0;
+    }
+
+    .topbar-label {
+      color: #9aa8b0;
+      font-size: 0.72rem;
+      font-weight: 650;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.28fr);
+      align-items: center;
+      gap: clamp(36px, 6vw, 84px);
+      padding-block: clamp(44px, 8vh, 84px) 48px;
+    }
+
+    .intro {
+      max-inline-size: 460px;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 18px;
+      color: #9ab4bd;
+      font-size: 0.73rem;
+      font-weight: 750;
+      letter-spacing: 0.17em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      inline-size: 8px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #86d6df;
+      box-shadow: 0 0 14px rgb(134 214 223 / 60%);
+      content: "";
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      font-weight: 650;
+      letter-spacing: -0.06em;
+      line-height: 1.02;
+      text-wrap: balance;
+    }
+
+    .description {
+      margin: 20px 0 30px;
+      color: #aab3bb;
+      font-size: 1.02rem;
+      line-height: 1.65;
+      text-wrap: pretty;
+    }
+
+    .status-card {
+      display: grid;
+      gap: 18px;
+      padding: 20px;
+      border: 1px solid #303d45;
+      border-radius: 16px;
+      background: rgb(25 33 39 / 86%);
+    }
+
+    .status-row {
+      display: grid;
+      grid-template-columns: 12px minmax(0, 1fr);
+      align-items: start;
+      gap: 12px;
+    }
+
+    .status-light {
+      inline-size: 9px;
+      aspect-ratio: 1;
+      margin-block-start: 5px;
+      border-radius: 50%;
+      background: #d3b86e;
+      box-shadow: 0 0 12px rgb(211 184 110 / 45%);
+    }
+
+    .status-light[data-state="connected"],
+    .status-light[data-state="ready"] {
+      background: #72d6a1;
+      box-shadow: 0 0 12px rgb(114 214 161 / 48%);
+    }
+
+    .status-light[data-state="error"] {
+      background: #ff8b79;
+      box-shadow: 0 0 12px rgb(255 139 121 / 45%);
+    }
+
+    .status-copy h2 {
+      margin: 0 0 4px;
+      color: #9aa8b0;
+      font-size: 0.68rem;
+      font-weight: 750;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .status-copy p {
+      margin: 0;
+      color: #f0f3f4;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .instructions {
+      margin-block-start: 30px;
+    }
+
+    .instructions h2 {
+      margin: 0 0 14px;
+      color: #e5e9eb;
+      font-size: 0.95rem;
+      font-weight: 650;
+    }
+
+    .instructions ol {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      color: #aab3bb;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      list-style: none;
+      counter-reset: steps;
+    }
+
+    .instructions li {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr);
+      align-items: start;
+      gap: 10px;
+      counter-increment: steps;
+    }
+
+    .instructions li::before {
+      display: grid;
+      inline-size: 24px;
+      aspect-ratio: 1;
+      place-items: center;
+      border: 1px solid #39474f;
+      border-radius: 50%;
+      color: #86d6df;
+      content: counter(steps);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .help-note {
+      margin: 16px 0 0;
+      color: #84929a;
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .stage-panel {
+      min-inline-size: 0;
+    }
+
+    .stage-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-block-end: 14px;
+    }
+
+    .stage-heading h2 {
+      margin: 0;
+      color: #dce3e6;
+      font-size: 0.78rem;
+      font-weight: 750;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .stage-resolution {
+      color: #84929a;
+      font-size: 0.76rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #stage {
+      inline-size: 100%;
+      aspect-ratio: 4 / 3;
+      overflow: clip;
+      border: 1px solid #394850;
+      border-radius: 20px;
+      background:
+        radial-gradient(ellipse at 50% 40%, #263943, #172127 72%);
+      box-shadow: 0 24px 70px rgb(0 0 0 / 28%);
+    }
+
+    #stage canvas {
+      display: block;
+      inline-size: 100% !important;
+      block-size: auto !important;
+      aspect-ratio: 4 / 3;
+    }
+
+    .stage-caption {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 14px 2px 0;
+      color: #89979e;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .stage-caption::before {
+      inline-size: 6px;
+      aspect-ratio: 1;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: #86d6df;
+      content: "";
+    }
+
+    .page-footer {
+      padding-block-start: 20px;
+      border-block-start: 1px solid #26323a;
+      color: #79878f;
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 760px) {
+      .workspace {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 36px;
+        padding-block: 48px 36px;
+      }
+
+      .intro {
+        max-inline-size: 600px;
+      }
+
+      h1 {
+        max-inline-size: 13ch;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page-shell {
+        padding-inline: 16px;
+      }
+
+      .topbar-label {
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+      }
+
+      .workspace {
+        padding-block-start: 38px;
+      }
+
+      #stage {
+        border-radius: 14px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Inicio: Manipulación con la mano">
+        <span class="brand-mark" aria-hidden="true">⌁</span>
+        <span>MANIPULACIÓN CON LA MANO</span>
+      </a>
+      <span class="topbar-label">Experiencia interactiva</span>
+    </header>
 
-  <div id="ui">
-    <h1 id="msg">Initialising AI...</h1>
-    <p>Target: Move the orange ball by pinching your thumb and index finger.</p>
-    <p id="connection">Connecting to VR server...</p>
+    <main class="workspace">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">Seguimiento en vivo</p>
+        <h1 id="page-title">Mueve la esfera con tus manos</h1>
+        <p class="description">La cámara detecta tu mano en tiempo real. Junta el pulgar y el índice para tomar la esfera y moverla.</p>
+
+        <div class="status-card">
+          <div class="status-row">
+            <span class="status-light" id="model-indicator" data-state="loading" aria-hidden="true"></span>
+            <div class="status-copy">
+              <h2>Detección de mano</h2>
+              <p id="msg" role="status" aria-live="polite" aria-atomic="true">Iniciando el modelo…</p>
+            </div>
+          </div>
+          <div class="status-row">
+            <span class="status-light" id="connection-indicator" data-state="connecting" aria-hidden="true"></span>
+            <div class="status-copy">
+              <h2>Conexión VR</h2>
+              <p id="connection" role="status" aria-live="polite" aria-atomic="true">Conectando al servidor…</p>
+            </div>
+          </div>
+        </div>
+
+        <section class="instructions" aria-labelledby="instructions-title">
+          <h2 id="instructions-title">Cómo empezar</h2>
+          <ol>
+            <li>Permite el acceso a la cámara cuando el navegador lo solicite.</li>
+            <li>Mantén la mano dentro del encuadre de la cámara.</li>
+            <li>Junta el pulgar y el índice sobre la esfera para moverla; sepáralos para soltarla.</li>
+          </ol>
+          <p class="help-note">Si el modelo no inicia, comprueba tu conexión a internet y recarga la página.</p>
+        </section>
+      </section>
+
+      <section class="stage-panel" aria-labelledby="stage-title">
+        <div class="stage-heading">
+          <h2 id="stage-title">Vista de cámara</h2>
+          <span class="stage-resolution">640 × 480</span>
+        </div>
+        <div id="stage" role="img" aria-label="Vista en vivo de la cámara con seguimiento de la mano y esfera interactiva"></div>
+        <p class="stage-caption">Tu cámara se procesa en este dispositivo; el video no se envía al visor.</p>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      Mantén esta página abierta en la computadora mientras abres la experiencia VR en tu teléfono.
+    </footer>
   </div>
 
 <script>
@@ -31,23 +425,40 @@
   let lastDetection = 0;
   let lastSent = 0;
   let socket;
+  let lastHandState = null;
+
+  function updateHandStatus(detected) {
+    if (lastHandState === detected) return;
+    lastHandState = detected;
+    document.getElementById("msg").textContent = detected ? "Mano detectada" : "Esperando una mano";
+    document.getElementById("model-indicator").dataset.state = "ready";
+  }
+
+  function updateConnectionStatus(message, state) {
+    document.getElementById("connection").textContent = message;
+    document.getElementById("connection-indicator").dataset.state = state;
+  }
 
   function connectVR() {
     if (location.protocol !== "http:" && location.protocol !== "https:") {
-      document.getElementById("connection").innerText = "Start the server to connect to VR.";
+      updateConnectionStatus("Inicia el servidor para conectar con VR.", "error");
       return;
     }
     const protocol = location.protocol === "https:" ? "wss:" : "ws:";
     socket = new WebSocket(`${protocol}//${location.host}/tracking`);
     socket.addEventListener("open", () => {
-      document.getElementById("connection").innerText = "VR server connected.";
+      updateConnectionStatus("Conectado al servidor VR.", "connected");
     });
     socket.addEventListener("error", () => {
-      document.getElementById("connection").innerText = "VR server connection error.";
+      updateConnectionStatus("No se pudo conectar con el servidor VR.", "error");
     });
     socket.addEventListener("close", event => {
-      document.getElementById("connection").innerText =
-        event.reason || "VR server disconnected; reconnecting...";
+      updateConnectionStatus(
+        event.code === 1008
+          ? "Ya hay otra sesión de seguimiento conectada."
+          : "Conexión perdida. Reintentando…",
+        "error"
+      );
       setTimeout(connectVR, 1500);
     });
   }
@@ -86,7 +497,8 @@
    * Runs once. This sets up our "stage" (canvas) and "actors" (video).
    */
   function setup() {
-    createCanvas(640, 480); // Creates a 640x480 pixel work area
+    createCanvas(640, 480).parent("stage");
+    updateHandStatus(false);
     connectVR();
     
     // Start the webcam. { flipped: true } ensures the video matches the AI.
@@ -99,7 +511,7 @@
     handPose.detectStart(video, (results) => {
       hands = results;
       lastDetection = Date.now();
-      document.getElementById("msg").innerText = "AI System: ONLINE";
+      updateHandStatus(hands.length > 0);
     });
   }
 

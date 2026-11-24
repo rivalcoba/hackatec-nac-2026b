@@ -31,7 +31,7 @@ test('server delivers hand state and releases viewers on disconnect', async t =>
   assert.match(home, /href="\/vr"/);
   assert.match(home, /href="\/tracker"/);
   const trackerPage = await (await fetch(`${base}/tracker`)).text();
-  assert.match(trackerPage, /p5\.js Hand Tracking Lesson/);
+  assert.match(trackerPage, /Seguimiento de mano \| Manipulación con la mano/);
   for (const [route, method] of [
     ['/missing', 'GET'],
     ['/server.js', 'GET'],
