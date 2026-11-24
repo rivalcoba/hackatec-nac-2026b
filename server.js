@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const http = require('node:http');
 const https = require('node:https');
 const path = require('node:path');
+const express = require('express');
 const { WebSocket, WebSocketServer } = require('ws');
 
 const port = Number(process.env.PORT ?? 3000);
@@ -11,33 +12,36 @@ if (!!keyPath !== !!certPath) {
   throw new Error('TLS_KEY and TLS_CERT must be provided together');
 }
 
-const files = {
-  '/': ['index.html', 'text/html; charset=utf-8'],
-  '/vr': ['vr.html', 'text/html; charset=utf-8'],
-  '/interaction.js': ['interaction.js', 'text/javascript; charset=utf-8']
-};
-const handler = (req, res) => {
-  const file = files[new URL(req.url, 'http://localhost').pathname];
-  if (!file || req.method !== 'GET') {
-    res.writeHead(404);
-    res.end('Not found');
-    return;
-  }
-  fs.readFile(path.join(__dirname, file[0]), (error, data) => {
+const app = express();
+app.disable('x-powered-by');
+app.enable('case sensitive routing');
+app.enable('strict routing');
+
+app.use((req, res, next) => {
+  if (req.method !== 'GET') return res.status(404).send('Not found');
+  next();
+});
+
+function serveFile(filename, contentType) {
+  return (req, res) => fs.readFile(path.join(__dirname, filename), (error, data) => {
     if (error) {
       console.error('Unable to serve file:', error);
-      res.writeHead(500);
-      res.end('Unable to serve file');
+      res.status(500).send('Unable to serve file');
       return;
     }
-    res.writeHead(200, { 'Content-Type': file[1], 'Cache-Control': 'no-store' });
+    res.set({ 'Content-Type': contentType, 'Cache-Control': 'no-store' });
     res.end(data);
   });
-};
+}
+
+app.get('/', serveFile('index.html', 'text/html; charset=utf-8'));
+app.get('/vr', serveFile('vr.html', 'text/html; charset=utf-8'));
+app.get('/interaction.js', serveFile('interaction.js', 'text/javascript; charset=utf-8'));
+app.use((req, res) => res.status(404).send('Not found'));
 
 const server = keyPath
-  ? https.createServer({ key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) }, handler)
-  : http.createServer(handler);
+  ? https.createServer({ key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) }, app)
+  : http.createServer(app);
 const sockets = new WebSocketServer({ server, maxPayload: 1024 });
 const absent = JSON.stringify({ present: false });
 let tracker = null;

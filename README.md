@@ -1,6 +1,6 @@
 # Manipulación de una esfera con la mano
 
-La PC detecta la mano con la webcam, p5.js y ml5.js. Un servidor Node.js retransmite la posición y el gesto por WebSocket a una escena A-Frame en el teléfono. No se envía video. Arduino no forma parte de este prototipo.
+La PC detecta la mano con la webcam, p5.js y ml5.js. Un servidor Node.js con Express sirve las páginas y retransmite la posición y el gesto por WebSocket a una escena A-Frame en el teléfono. No se envía video. Arduino no forma parte de este prototipo.
 
 ## Inicio
 

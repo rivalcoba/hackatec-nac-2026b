@@ -15,8 +15,30 @@ test('server delivers hand state and releases viewers on disconnect', async t =>
   const match = chunk.toString().match(/port (\d+)/);
   assert.ok(match, 'server did not report its port');
   const base = `http://127.0.0.1:${match[1]}`;
-  assert.equal((await fetch(`${base}/vr`)).status, 200);
-  assert.equal((await fetch(`${base}/missing`)).status, 404);
+  for (const [route, contentType] of [
+    ['/', 'text/html; charset=utf-8'],
+    ['/vr?source=test', 'text/html; charset=utf-8'],
+    ['/interaction.js', 'text/javascript; charset=utf-8']
+  ]) {
+    const response = await fetch(`${base}${route}`);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('content-type'), contentType);
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.ok((await response.text()).length > 0);
+  }
+  for (const [route, method] of [
+    ['/missing', 'GET'],
+    ['/server.js', 'GET'],
+    ['/VR', 'GET'],
+    ['/vr/', 'GET'],
+    ['/vr', 'HEAD'],
+    ['/vr', 'POST']
+  ]) {
+    assert.equal((await fetch(`${base}${route}`, { method })).status, 404);
+  }
+  assert.equal((await fetch(`${base}/vr`, {
+    headers: { 'If-None-Match': '*' }
+  })).status, 200);
 
   const viewer = new WebSocket(base.replace('http:', 'ws:') + '/viewer');
   t.after(() => viewer.terminate());
