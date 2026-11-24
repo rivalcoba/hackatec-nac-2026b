@@ -2,6 +2,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const { once } = require('node:events');
+const fs = require('node:fs');
+const path = require('node:path');
 const { WebSocket } = require('ws');
 
 test('server delivers hand state and releases viewers on disconnect', async t => {
@@ -32,8 +34,16 @@ test('server delivers hand state and releases viewers on disconnect', async t =>
   assert.match(home, /href="\/tracker"/);
   const trackerPage = await (await fetch(`${base}/tracker`)).text();
   assert.match(trackerPage, /Seguimiento de mano \| Manipulación con la mano/);
+  const model = await fetch(`${base}/assets/vernier-caliper.glb`);
+  assert.equal(model.status, 200);
+  assert.equal(model.headers.get('content-type'), 'model/gltf-binary');
+  assert.equal(model.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(Buffer.from(await model.arrayBuffer()), fs.readFileSync(path.join(__dirname, '../assets/vernier-caliper.glb')));
   for (const [route, method] of [
     ['/missing', 'GET'],
+    ['/assets/missing.glb', 'GET'],
+    ['/assets/', 'GET'],
+    ['/assets/vernier-caliper.glb', 'POST'],
     ['/server.js', 'GET'],
     ['/VR', 'GET'],
     ['/vr/', 'GET'],

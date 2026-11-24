@@ -38,6 +38,11 @@ app.get('/', serveFile('index.html', 'text/html; charset=utf-8'));
 app.get('/tracker', serveFile('tracker.html', 'text/html; charset=utf-8'));
 app.get('/vr', serveFile('vr.html', 'text/html; charset=utf-8'));
 app.get('/interaction.js', serveFile('interaction.js', 'text/javascript; charset=utf-8'));
+app.use('/assets', express.static(path.join(__dirname, 'assets'), {
+  index: false,
+  redirect: false,
+  setHeaders: res => res.setHeader('Cache-Control', 'no-store')
+}));
 app.use((req, res) => res.status(404).send('Not found'));
 
 const server = keyPath

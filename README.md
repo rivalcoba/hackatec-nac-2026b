@@ -1,4 +1,4 @@
-# Manipulación de una esfera con la mano
+# Manipulación de un calibrador con la mano
 
 La PC detecta la mano con la webcam, p5.js y ml5.js. Un servidor Node.js con Express sirve las páginas y retransmite la posición y el gesto por WebSocket a una escena A-Frame en el teléfono. No se envía video. Arduino no forma parte de este prototipo.
 
@@ -7,9 +7,11 @@ La PC detecta la mano con la webcam, p5.js y ml5.js. Un servidor Node.js con Exp
 1. Instala Node.js (versión 18 o posterior) y ejecuta `npm install` y `npm start`.
 2. Abre `http://localhost:3000/` para elegir una experiencia. En la PC, selecciona **Seguimiento en PC** y permite el uso de la cámara; la vista muestra el círculo y el estado de conexión.
 3. Conecta el Android a la misma red. Averigua la IP local de la PC, por ejemplo con `hostname -I` en Linux, y abre `http://IP_DE_LA_PC:3000/vr` en Chrome. Si no conecta, revisa el firewall y que la red no aísle los dispositivos.
-4. Coloca la mano delante de la webcam. En la escena, mueve el indicador verde sobre la esfera y junta el pulgar y el índice para tomarla. Mantenlos juntos para moverla y sepáralos para soltarla. Si pierdes la mano o la conexión, la esfera permanece en su última posición.
+4. Coloca la mano delante de la webcam. En la escena, mueve el indicador verde hacia el centro del calibrador y junta el pulgar y el índice para tomarlo. Un círculo amarillo indica que está agarrado. Mantenlos juntos para moverlo y sepáralos para soltarlo. Si pierdes la mano o la conexión, el calibrador permanece en su última posición.
 
-La esfera se mueve en un plano fijo; la webcam no proporciona profundidad real ni una correspondencia espacial automática entre la mano y el visor. Ajusta la posición de la mano mirando el indicador. Solo se permite una página de seguimiento conectada a la vez; cierra otras pestañas de seguimiento si la PC no conecta. Se necesita internet para cargar las bibliotecas desde sus CDN.
+El calibrador se mueve en un plano fijo; la webcam no proporciona profundidad real ni una correspondencia espacial automática entre la mano y el visor. Ajusta la posición de la mano mirando el indicador. Solo se permite una página de seguimiento conectada a la vez; cierra otras pestañas de seguimiento si la PC no conecta. Se necesita internet para cargar las bibliotecas desde sus CDN.
+
+Express sirve los modelos de la carpeta `assets` bajo `/assets`; la escena carga `assets/vernier-caliper.glb`.
 
 ## HTTPS y Cardboard
 
