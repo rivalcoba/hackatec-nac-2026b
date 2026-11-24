@@ -45,6 +45,26 @@ function hand(handedness, x, y, pinching = true) {
   return { handedness, keypoints };
 }
 
+test("places the canvas in the camera panel and updates the system status", () => {
+  const status = { dataset: {}, textContent: "" };
+  let canvasParent;
+  let detectionCallback;
+  const context = vm.createContext({
+    VIDEO: "video",
+    createCanvas() { return { parent(id) { canvasParent = id; } }; },
+    createCapture() { return { size() {}, hide() {} }; },
+    document: { getElementById() { return status; } },
+    ml5: { handPose() { return { detectStart(video, callback) { detectionCallback = callback; } }; } },
+  });
+  vm.runInContext(script, context);
+  vm.runInContext("preload(); setup()", context);
+  detectionCallback([]);
+
+  assert.equal(canvasParent, "canvas-container");
+  assert.equal(status.textContent, "Sistema activo");
+  assert.equal(status.dataset.state, "online");
+});
+
 test("draws both hands using their handedness, not their order", () => {
   const sketch = createSketch();
   sketch.draw([hand("Left", 100, 100), hand("Right", 200, 200)]);

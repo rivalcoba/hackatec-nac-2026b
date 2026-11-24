@@ -1,22 +1,167 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>p5.js Hand Tracking Lesson</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101311">
+  <title>HandLab · Control por gestos</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.js"></script>
   <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
   <style>
-    body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    canvas { border: 5px solid #444; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    #ui { position: absolute; top: 20px; text-align: center; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+    :root {
+      color-scheme: dark;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #101311;
+      color: #eef2e9;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 280px; }
+    .app { max-width: 1440px; margin: 0 auto; padding: 0 5%; }
+    .topbar {
+      min-height: 82px; display: flex; justify-content: space-between;
+      align-items: center; gap: 20px; border-bottom: 1px solid #303830;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 19px; font-weight: 750; letter-spacing: -.05em; }
+    .brand-mark {
+      width: 30px; height: 30px; display: grid; place-items: center;
+      background: #c4f46d; color: #101311; font-size: 18px; font-weight: 800;
+    }
+    .brand span:last-child { color: #9da79b; font-weight: 400; }
+    .topbar-label, .eyebrow, .panel-label, .step-number, .footer {
+      font-family: "Courier New", monospace; text-transform: uppercase; letter-spacing: .12em;
+    }
+    .topbar-label { color: #8c988a; font-size: 10px; text-align: right; }
+    main { padding: 66px 0 72px; }
+    .intro { max-width: 790px; margin-bottom: 42px; }
+    .eyebrow { display: flex; align-items: center; gap: 10px; color: #c4f46d; font-size: 11px; font-weight: 700; }
+    .eyebrow::before { content: ""; width: 23px; height: 2px; background: #c4f46d; }
+    h1 { margin: 20px 0 14px; font-size: clamp(40px, 5.2vw, 72px); line-height: 1.02; letter-spacing: -.065em; font-weight: 650; }
+    h1 span { color: #c4f46d; }
+    .intro p { max-width: 590px; margin: 0; color: #a7b1a3; font-size: 16px; line-height: 1.65; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: stretch; }
+    .camera-panel, .guide { border: 1px solid #303a31; background: #191e1a; }
+    .panel-header {
+      min-height: 62px; display: flex; justify-content: space-between; align-items: center;
+      gap: 14px; padding: 15px 20px; border-bottom: 1px solid #303a31;
+    }
+    .panel-title { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 650; }
+    .panel-title::before { content: ""; width: 8px; height: 8px; background: #c4f46d; }
+    .panel-label { color: #8c988a; font-size: 10px; }
+    .status {
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 10px;
+      border: 1px solid #48533e; color: #e4d797; font-size: 11px; white-space: nowrap;
+    }
+    .status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .status[data-state="online"] { color: #c4f46d; }
+    .camera-body { padding: 16px; }
+    .camera-frame {
+      position: relative; overflow: hidden; background: #0d100e;
+      aspect-ratio: 4 / 3; display: grid; place-items: center;
+    }
+    .camera-placeholder { position: absolute; color: #748073; font-size: 13px; text-align: center; padding: 20px; }
+    #canvas-container { position: relative; z-index: 1; width: 100%; line-height: 0; }
+    #canvas-container canvas { display: block; width: 100% !important; height: auto !important; }
+    .camera-footer {
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+      padding: 0 20px 18px; color: #8f9b8d; font-size: 11px;
+    }
+    .camera-footer strong { color: #d7dfd2; font-weight: 600; }
+    .guide { display: flex; flex-direction: column; }
+    .guide-content { padding: 24px 22px; }
+    .guide h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -.04em; }
+    .guide-intro { margin: 0 0 26px; color: #a7b1a3; font-size: 13px; line-height: 1.6; }
+    .steps { margin: 0; padding: 0; list-style: none; }
+    .steps li { display: grid; grid-template-columns: 31px 1fr; gap: 12px; padding: 16px 0; border-top: 1px solid #303a31; }
+    .step-number { color: #c4f46d; font-size: 11px; padding-top: 3px; }
+    .steps strong { display: block; margin-bottom: 5px; font-size: 13px; }
+    .steps p { margin: 0; color: #a7b1a3; font-size: 12px; line-height: 1.6; }
+    .legend { margin-top: auto; padding: 20px 22px; border-top: 1px solid #303a31; background: #151a16; }
+    .legend .panel-label { display: block; margin-bottom: 15px; }
+    .legend-items { display: flex; flex-wrap: wrap; gap: 18px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; color: #d7dfd2; font-size: 12px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; }
+    .dot-right { background: #00ff96; }
+    .dot-left { background: #ff5050; }
+    .footer {
+      display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      padding: 22px 0; border-top: 1px solid #303830; color: #8c988a; font-size: 10px;
+    }
+    @media (max-width: 800px) {
+      main { padding: 48px 0; }
+      .workspace { grid-template-columns: 1fr; }
+      .guide-content { padding-bottom: 10px; }
+    }
+    @media (max-width: 480px) {
+      .app { padding: 0 20px; }
+      .topbar { min-height: 68px; }
+      .topbar-label { max-width: 110px; line-height: 1.5; }
+      main { padding: 40px 0; }
+      .intro { margin-bottom: 30px; }
+      .intro p { font-size: 14px; }
+      .panel-header { padding: 14px; }
+      .camera-body { padding: 10px; }
+      .camera-footer { padding: 0 14px 14px; }
+    }
   </style>
 </head>
 <body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">✳</span> Hand<span>Lab</span></div>
+      <div class="topbar-label">Interacción por gestos<br>Experimento 01</div>
+    </header>
 
-  <div id="ui">
-    <h1 id="msg">Initialising AI...</h1>
-    <p>Target: Move the orange ball by pinching your thumb and index finger.</p>
-    <p><span style="color: #00ff96">Right hand: green</span> | <span style="color: #ff5050">Left hand: red</span></p>
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div class="eyebrow">Visión artificial / En tiempo real</div>
+        <h1 id="page-title">Tus manos son<br>el <span>control.</span></h1>
+        <p>Explora una nueva forma de interactuar. Usa tus manos para tomar y mover el objeto en pantalla.</p>
+      </section>
+
+      <div class="workspace">
+        <section class="camera-panel" aria-label="Vista de la cámara">
+          <div class="panel-header">
+            <div class="panel-title">Vista en vivo</div>
+            <div class="status" id="msg" role="status" aria-live="polite">Inicializando IA</div>
+          </div>
+          <div class="camera-body">
+            <div class="camera-frame">
+              <div class="camera-placeholder" id="p5_loading">Iniciando cámara y modelo de manos...</div>
+              <div id="canvas-container" role="img" aria-label="Video de la cámara con las manos detectadas y una pelota interactiva"></div>
+            </div>
+          </div>
+          <div class="camera-footer">
+            <span><strong>●</strong> Cámara en modo espejo</span>
+            <span>Permite el acceso a tu cámara para comenzar</span>
+          </div>
+        </section>
+
+        <aside class="guide" aria-labelledby="guide-title">
+          <div class="panel-header">
+            <div class="panel-title">Guía rápida</div>
+            <span class="panel-label">01 / 01</span>
+          </div>
+          <div class="guide-content">
+            <h2 id="guide-title">Listo para interactuar</h2>
+            <p class="guide-intro">Solo necesitas tus manos y un poco de espacio frente a la cámara.</p>
+            <ol class="steps">
+              <li><span class="step-number">01</span><div><strong>Muéstrale tus manos</strong><p>Colócalas dentro del encuadre para que el sistema las detecte.</p></div></li>
+              <li><span class="step-number">02</span><div><strong>Haz el gesto de pinza</strong><p>Junta el pulgar y el índice sobre la pelota naranja.</p></div></li>
+              <li><span class="step-number">03</span><div><strong>Mueve y suelta</strong><p>Desplaza la mano y separa los dedos para soltarla.</p></div></li>
+            </ol>
+          </div>
+          <div class="legend">
+            <span class="panel-label">Identificación de manos</span>
+            <div class="legend-items">
+              <div class="legend-item"><span class="dot dot-right" aria-hidden="true"></span>Derecha · verde</div>
+              <div class="legend-item"><span class="dot dot-left" aria-hidden="true"></span>Izquierda · rojo</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="footer"><span>HandLab / Interacción intuitiva</span><span>Desarrollado con p5.js + ml5.js</span></footer>
   </div>
 
 <script>
@@ -51,7 +196,7 @@
    * Runs once. This sets up our "stage" (canvas) and "actors" (video).
    */
   function setup() {
-    createCanvas(640, 480); // Creates a 640x480 pixel work area
+    createCanvas(640, 480).parent("canvas-container"); // Creates a 640x480 pixel work area
     
     // Start the webcam. { flipped: true } ensures the video matches the AI.
     video = createCapture(VIDEO, { flipped: true });
@@ -62,7 +207,11 @@
     // When it finds something, it puts the results into our 'hands' array.
     handPose.detectStart(video, (results) => {
       hands = results;
-      document.getElementById("msg").innerText = "AI System: ONLINE";
+      const status = document.getElementById("msg");
+      if (status.dataset.state !== "online") {
+        status.textContent = "Sistema activo";
+        status.dataset.state = "online";
+      }
     });
   }
 
