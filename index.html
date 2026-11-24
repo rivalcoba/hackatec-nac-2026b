@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>p5.js Hand Tracking Lesson</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.js"></script>
+  <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
+  <style>
+    body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    canvas { border: 5px solid #444; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    #ui { position: absolute; top: 20px; text-align: center; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+  </style>
+</head>
+<body>
+
+  <div id="ui">
+    <h1 id="msg">Initialising AI...</h1>
+    <p>Target: Move the orange ball by pinching your thumb and index finger.</p>
+
+  </div>
+
+<script>
+  /**
+   * GLOBAL VARIABLES
+   * These act as the "memory" of our program.
+   */
+  let video;      // Holds the webcam feed
+  let handPose;   // Holds the ml5 HandPose model/engine
+  let hands = []; // An array (list) to store the data of any hands found
+  
+  // The 'ball' object: storing its state (position, size, and if it's "grabbed")
+  let ball = {
+    x: 320,
+    y: 240,
+    r: 40,
+    color: [255, 100, 0],
+    isBeingHeld: false
+  };
+
+  /**
+   * PRELOAD
+   * This runs before everything else. We load the "brain" (AI model) here.
+   */
+  function preload() {
+    // We tell the AI to "flip" its coordinates so it feels like a mirror.
+    handPose = ml5.handPose({ flipped: true });
+  }
+
+  /**
+   * SETUP
+   * Runs once. This sets up our "stage" (canvas) and "actors" (video).
+   */
+  function setup() {
+    createCanvas(640, 480); // Creates a 640x480 pixel work area
+    
+    // Start the webcam. { flipped: true } ensures the video matches the AI.
+    video = createCapture(VIDEO, { flipped: true });
+    video.size(640, 480);
+    video.hide(); // We hide the raw HTML video so we can draw it on the p5 canvas instead.
+
+    // detectStart tells the AI to keep looking for hands constantly.
+    // When it finds something, it puts the results into our 'hands' array.
+    handPose.detectStart(video, (results) => {
+      hands = results;
+      document.getElementById("msg").innerText = "AI System: ONLINE";
+    });
+  }
+
+  /**
+   * DRAW
+   * This is a loop that runs ~60 times per second. 
+   * It handles drawing the frames and checking for interactions.
+   */
+  function draw() {
+    // 1. Draw the video background
+    image(video, 0, 0, width, height);
+
+    // 2. Check if the AI has found any hands
+    if (hands.length > 0) {
+      let hand = hands[0]; // We focus on the first hand detected
+
+      drawSkeleton(hand);  // Visual: Draw the joints and bones
+      handleInteraction(hand); // Logic: Can we pick up the ball?
+    } else {
+      // If no hands are on screen, the ball should fall/stay put
+      ball.isBeingHeld = false;
+    }
+
+    // 3. Always draw the ball last (so it's on top of the video)
+    drawBall();
+  }
+
+  /**
+   * drawSkeleton(hand)
+   * Loops through the 21 keypoints provided by the AI and draws them.
+   */
+  function drawSkeleton(hand) {
+    for (let i = 0; i < hand.keypoints.length; i++) {
+      let kp = hand.keypoints[i];
+      fill(0, 255, 150); // Neon green
+      noStroke();
+      circle(kp.x, kp.y, 10); // Draw a small circle at every joint
+    }
+  }
+
+  /**
+   * handleInteraction(hand)
+   * This is the "Brain" of the interaction.
+   */
+  function handleInteraction(hand) {
+    // Point 4 is the tip of the Thumb
+    // Point 8 is the tip of the Index Finger
+    let thumb = hand.keypoints[4];
+    let index = hand.keypoints[8];
+
+    // MATH: The Distance Formula. 
+    // It calculates how many pixels are between the thumb and index finger.
+    let d = dist(thumb.x, thumb.y, index.x, index.y);
+    
+    // The "Pinch Point" is the average position between the two fingers.
+    let pinchX = (thumb.x + index.x) / 2;
+    let pinchY = (thumb.y + index.y) / 2;
+
+    // PINCH LOGIC:
+    // If the distance (d) is less than 40 pixels, the user is "pinching."
+    if (d < 40) {
+      // Check if that pinch is happening inside the ball's area.
+      let distToBall = dist(pinchX, pinchY, ball.x, ball.y);
+      
+      // If we are already holding it, OR if we just started pinching near the ball:
+      if (ball.isBeingHeld || distToBall < ball.r) {
+        ball.isBeingHeld = true; // State change!
+        ball.x = pinchX;         // Move the ball to our finger position
+        ball.y = pinchY;
+      }
+    } else {
+      // If fingers spread apart, the pinch is broken.
+      ball.isBeingHeld = false;
+    }
+  }
+
+  /**
+   * drawBall()
+   * Renders the interactive ball with visual feedback.
+   */
+  function drawBall() {
+    push(); // Start a temporary drawing state
+    if (ball.isBeingHeld) {
+      fill(255, 255, 0); // Turn yellow when grabbed
+      stroke(255);       // Add a white outline
+      strokeWeight(4);
+    } else {
+      fill(ball.color);  // Standard orange
+      noStroke();
+    }
+    circle(ball.x, ball.y, ball.r * 2);
+    pop(); // Reset drawing state
+  }
+</script>
+	
+</body>
+</html>
