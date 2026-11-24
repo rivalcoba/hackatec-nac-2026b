@@ -16,7 +16,7 @@
   <div id="ui">
     <h1 id="msg">Initialising AI...</h1>
     <p>Target: Move the orange ball by pinching your thumb and index finger.</p>
-
+    <p><span style="color: #00ff96">Right hand: green</span> | <span style="color: #ff5050">Left hand: red</span></p>
   </div>
 
 <script>
@@ -28,13 +28,13 @@
   let handPose;   // Holds the ml5 HandPose model/engine
   let hands = []; // An array (list) to store the data of any hands found
   
-  // The 'ball' object: storing its state (position, size, and if it's "grabbed")
+  // The 'ball' object stores its position, size, and which hand is holding it.
   let ball = {
     x: 320,
     y: 240,
     r: 40,
     color: [255, 100, 0],
-    isBeingHeld: false
+    heldBy: null
   };
 
   /**
@@ -43,7 +43,7 @@
    */
   function preload() {
     // We tell the AI to "flip" its coordinates so it feels like a mirror.
-    handPose = ml5.handPose({ flipped: true });
+    handPose = ml5.handPose({ flipped: true, maxHands: 2 });
   }
 
   /**
@@ -75,15 +75,25 @@
     // 1. Draw the video background
     image(video, 0, 0, width, height);
 
-    // 2. Check if the AI has found any hands
-    if (hands.length > 0) {
-      let hand = hands[0]; // We focus on the first hand detected
+    // Draw both hands, regardless of which one is holding the ball.
+    for (const hand of hands) {
+      drawSkeleton(hand);
+    }
 
-      drawSkeleton(hand);  // Visual: Draw the joints and bones
-      handleInteraction(hand); // Logic: Can we pick up the ball?
-    } else {
-      // If no hands are on screen, the ball should fall/stay put
-      ball.isBeingHeld = false;
+    if (ball.heldBy !== null) {
+      const holdingHand = hands.find((hand) => hand.handedness === ball.heldBy);
+      if (holdingHand) {
+        handleInteraction(holdingHand);
+      } else {
+        ball.heldBy = null;
+      }
+    }
+
+    if (ball.heldBy === null) {
+      for (const hand of hands) {
+        handleInteraction(hand);
+        if (ball.heldBy !== null) break;
+      }
     }
 
     // 3. Always draw the ball last (so it's on top of the video)
@@ -97,7 +107,13 @@
   function drawSkeleton(hand) {
     for (let i = 0; i < hand.keypoints.length; i++) {
       let kp = hand.keypoints[i];
-      fill(0, 255, 150); // Neon green
+      if (hand.handedness === "Right") {
+        fill(0, 255, 150);
+      } else if (hand.handedness === "Left") {
+        fill(255, 80, 80);
+      } else {
+        fill(255);
+      }
       noStroke();
       circle(kp.x, kp.y, 10); // Draw a small circle at every joint
     }
@@ -108,6 +124,8 @@
    * This is the "Brain" of the interaction.
    */
   function handleInteraction(hand) {
+    if (hand.handedness !== "Left" && hand.handedness !== "Right") return;
+
     // Point 4 is the tip of the Thumb
     // Point 8 is the tip of the Index Finger
     let thumb = hand.keypoints[4];
@@ -128,14 +146,14 @@
       let distToBall = dist(pinchX, pinchY, ball.x, ball.y);
       
       // If we are already holding it, OR if we just started pinching near the ball:
-      if (ball.isBeingHeld || distToBall < ball.r) {
-        ball.isBeingHeld = true; // State change!
+      if (ball.heldBy === hand.handedness || distToBall < ball.r) {
+        ball.heldBy = hand.handedness;
         ball.x = pinchX;         // Move the ball to our finger position
         ball.y = pinchY;
       }
     } else {
       // If fingers spread apart, the pinch is broken.
-      ball.isBeingHeld = false;
+      if (ball.heldBy === hand.handedness) ball.heldBy = null;
     }
   }
 
@@ -145,7 +163,7 @@
    */
   function drawBall() {
     push(); // Start a temporary drawing state
-    if (ball.isBeingHeld) {
+    if (ball.heldBy !== null) {
       fill(255, 255, 0); // Turn yellow when grabbed
       stroke(255);       // Add a white outline
       strokeWeight(4);
