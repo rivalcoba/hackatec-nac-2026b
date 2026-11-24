@@ -17,6 +17,7 @@ test('server delivers hand state and releases viewers on disconnect', async t =>
   const base = `http://127.0.0.1:${match[1]}`;
   for (const [route, contentType] of [
     ['/', 'text/html; charset=utf-8'],
+    ['/tracker', 'text/html; charset=utf-8'],
     ['/vr?source=test', 'text/html; charset=utf-8'],
     ['/interaction.js', 'text/javascript; charset=utf-8']
   ]) {
@@ -26,6 +27,11 @@ test('server delivers hand state and releases viewers on disconnect', async t =>
     assert.equal(response.headers.get('cache-control'), 'no-store');
     assert.ok((await response.text()).length > 0);
   }
+  const home = await (await fetch(`${base}/`)).text();
+  assert.match(home, /href="\/vr"/);
+  assert.match(home, /href="\/tracker"/);
+  const trackerPage = await (await fetch(`${base}/tracker`)).text();
+  assert.match(trackerPage, /p5\.js Hand Tracking Lesson/);
   for (const [route, method] of [
     ['/missing', 'GET'],
     ['/server.js', 'GET'],

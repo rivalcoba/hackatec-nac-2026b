@@ -1,200 +1,253 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>p5.js Hand Tracking Lesson</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.js"></script>
-  <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
-  <script src="interaction.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10151c">
+  <title>Manipulación con la mano | Inicio</title>
   <style>
-    body { margin: 0; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    canvas { border: 5px solid #444; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    #ui { position: absolute; top: 20px; text-align: center; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #10151c;
+      color: #f3f5f7;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 48px 24px;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgb(33 59 71 / 48%), transparent 58%),
+        #10151c;
+    }
+
+    main {
+      width: min(100%, 960px);
+    }
+
+    .eyebrow {
+      margin: 0 0 16px;
+      color: #9ab4bd;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 680px;
+      margin: 0 auto;
+      font-size: clamp(2.4rem, 6vw, 4.5rem);
+      font-weight: 650;
+      letter-spacing: -0.055em;
+      line-height: 1.03;
+      text-align: center;
+      text-wrap: balance;
+    }
+
+    .intro {
+      max-width: 520px;
+      margin: 20px auto 44px;
+      color: #aab3bb;
+      font-size: 1.05rem;
+      line-height: 1.65;
+      text-align: center;
+      text-wrap: pretty;
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .choice-link {
+      min-height: 240px;
+      color: inherit;
+      text-decoration: none;
+      border-radius: 20px;
+    }
+
+    .choice {
+      position: relative;
+      display: flex;
+      min-height: inherit;
+      flex-direction: column;
+      align-items: flex-start;
+      overflow: hidden;
+      padding: 28px;
+      border: 1px solid #35414a;
+      border-radius: inherit;
+      background: linear-gradient(145deg, #1d272e, #171d23 72%);
+      transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+    }
+
+    .choice::after {
+      position: absolute;
+      right: -48px;
+      bottom: -82px;
+      width: 200px;
+      aspect-ratio: 1;
+      border: 1px solid rgb(255 255 255 / 8%);
+      border-radius: 50%;
+      box-shadow: 0 0 0 24px rgb(255 255 255 / 2%), 0 0 0 48px rgb(255 255 255 / 2%);
+      content: "";
+      pointer-events: none;
+    }
+
+    .choice-link:hover .choice {
+      transform: translateY(-4px);
+      border-color: #687983;
+    }
+
+    .choice-link:focus-visible {
+      outline: 3px solid #86d6df;
+      outline-offset: 5px;
+    }
+
+    .choice--vr {
+      border-color: #51513d;
+      background: linear-gradient(145deg, #292a23, #1c201f 72%);
+    }
+
+    .choice-link:hover .choice--vr {
+      border-color: #d3b86e;
+    }
+
+    .number {
+      display: grid;
+      width: 42px;
+      aspect-ratio: 1;
+      place-items: center;
+      margin-bottom: auto;
+      border: 1px solid #46535b;
+      border-radius: 50%;
+      color: #bdc9ce;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .choice--vr .number {
+      border-color: #706646;
+      color: #e2c46f;
+    }
+
+    h2 {
+      margin: 30px 0 8px;
+      font-size: clamp(1.45rem, 3vw, 1.8rem);
+      letter-spacing: -0.03em;
+    }
+
+    .choice p {
+      max-width: 34ch;
+      margin: 0;
+      color: #aab3bb;
+      line-height: 1.55;
+    }
+
+    .launch {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 24px;
+      color: #86d6df;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .choice--vr .launch {
+      color: #e2c46f;
+    }
+
+    .launch::after {
+      content: "→";
+      font-size: 1.1rem;
+      transition: transform 180ms ease;
+    }
+
+    .choice-link:hover .launch::after {
+      transform: translateX(4px);
+    }
+
+    .hint {
+      margin: 28px 0 0;
+      color: #89949c;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 40px 20px;
+      }
+
+      .intro {
+        margin-bottom: 32px;
+      }
+
+      .choices {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .choice-link {
+        min-height: 210px;
+      }
+
+      .choice {
+        padding: 24px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body>
+  <main>
+    <p class="eyebrow">Manipulación con la mano</p>
+    <h1>Elige tu experiencia</h1>
+    <p class="intro">Explora la escena en realidad virtual o inicia el seguimiento de la mano desde tu computadora.</p>
 
-  <div id="ui">
-    <h1 id="msg">Initialising AI...</h1>
-    <p>Target: Move the orange ball by pinching your thumb and index finger.</p>
-    <p id="connection">Connecting to VR server...</p>
-  </div>
+    <div class="choices">
+      <a class="choice-link" href="/vr">
+        <article class="choice choice--vr">
+          <span class="number" aria-hidden="true">01</span>
+          <h2>Experiencia VR</h2>
+          <p>Abre la escena 3D para explorarla desde tu teléfono o visor.</p>
+          <span class="launch">Lanzar experiencia VR</span>
+        </article>
+      </a>
 
-<script>
-  /**
-   * GLOBAL VARIABLES
-   * These act as the "memory" of our program.
-   */
-  let video;      // Holds the webcam feed
-  let handPose;   // Holds the ml5 HandPose model/engine
-  let hands = []; // An array (list) to store the data of any hands found
-  let lastDetection = 0;
-  let lastSent = 0;
-  let socket;
+      <a class="choice-link" href="/tracker">
+        <article class="choice">
+          <span class="number" aria-hidden="true">02</span>
+          <h2>Seguimiento en PC</h2>
+          <p>Usa la cámara y tus dedos para controlar la esfera en pantalla.</p>
+          <span class="launch">Lanzar seguimiento</span>
+        </article>
+      </a>
+    </div>
 
-  function connectVR() {
-    if (location.protocol !== "http:" && location.protocol !== "https:") {
-      document.getElementById("connection").innerText = "Start the server to connect to VR.";
-      return;
-    }
-    const protocol = location.protocol === "https:" ? "wss:" : "ws:";
-    socket = new WebSocket(`${protocol}//${location.host}/tracking`);
-    socket.addEventListener("open", () => {
-      document.getElementById("connection").innerText = "VR server connected.";
-    });
-    socket.addEventListener("error", () => {
-      document.getElementById("connection").innerText = "VR server connection error.";
-    });
-    socket.addEventListener("close", event => {
-      document.getElementById("connection").innerText =
-        event.reason || "VR server disconnected; reconnecting...";
-      setTimeout(connectVR, 1500);
-    });
-  }
-
-  function sendHand() {
-    if (!socket || socket.readyState !== WebSocket.OPEN || millis() - lastSent < 33) return;
-    lastSent = millis();
-    const hand = Date.now() - lastDetection < 1000 ? hands[0] : null;
-    if (!hand) {
-      socket.send(JSON.stringify({ present: false }));
-      return;
-    }
-    socket.send(JSON.stringify(handState(hand, width, height)));
-  }
-  
-  // The 'ball' object: storing its state (position, size, and if it's "grabbed")
-  let ball = {
-    x: 320,
-    y: 240,
-    r: 40,
-    color: [255, 100, 0],
-    isBeingHeld: false
-  };
-
-  /**
-   * PRELOAD
-   * This runs before everything else. We load the "brain" (AI model) here.
-   */
-  function preload() {
-    // We tell the AI to "flip" its coordinates so it feels like a mirror.
-    handPose = ml5.handPose({ flipped: true });
-  }
-
-  /**
-   * SETUP
-   * Runs once. This sets up our "stage" (canvas) and "actors" (video).
-   */
-  function setup() {
-    createCanvas(640, 480); // Creates a 640x480 pixel work area
-    connectVR();
-    
-    // Start the webcam. { flipped: true } ensures the video matches the AI.
-    video = createCapture(VIDEO, { flipped: true });
-    video.size(640, 480);
-    video.hide(); // We hide the raw HTML video so we can draw it on the p5 canvas instead.
-
-    // detectStart tells the AI to keep looking for hands constantly.
-    // When it finds something, it puts the results into our 'hands' array.
-    handPose.detectStart(video, (results) => {
-      hands = results;
-      lastDetection = Date.now();
-      document.getElementById("msg").innerText = "AI System: ONLINE";
-    });
-  }
-
-  /**
-   * DRAW
-   * This is a loop that runs ~60 times per second. 
-   * It handles drawing the frames and checking for interactions.
-   */
-  function draw() {
-    // 1. Draw the video background
-    image(video, 0, 0, width, height);
-
-    // 2. Check if the AI has found any hands
-    if (hands.length > 0) {
-      let hand = hands[0]; // We focus on the first hand detected
-
-      drawSkeleton(hand);  // Visual: Draw the joints and bones
-      handleInteraction(hand); // Logic: Can we pick up the ball?
-    } else {
-      // If no hands are on screen, the ball should fall/stay put
-      ball.isBeingHeld = false;
-    }
-
-    // 3. Always draw the ball last (so it's on top of the video)
-    drawBall();
-    sendHand();
-  }
-
-  /**
-   * drawSkeleton(hand)
-   * Loops through the 21 keypoints provided by the AI and draws them.
-   */
-  function drawSkeleton(hand) {
-    for (let i = 0; i < hand.keypoints.length; i++) {
-      let kp = hand.keypoints[i];
-      fill(0, 255, 150); // Neon green
-      noStroke();
-      circle(kp.x, kp.y, 10); // Draw a small circle at every joint
-    }
-  }
-
-  /**
-   * handleInteraction(hand)
-   * This is the "Brain" of the interaction.
-   */
-  function handleInteraction(hand) {
-    // Point 4 is the tip of the Thumb
-    // Point 8 is the tip of the Index Finger
-    let thumb = hand.keypoints[4];
-    let index = hand.keypoints[8];
-
-    // MATH: The Distance Formula. 
-    // It calculates how many pixels are between the thumb and index finger.
-    let d = dist(thumb.x, thumb.y, index.x, index.y);
-    
-    // The "Pinch Point" is the average position between the two fingers.
-    let pinchX = (thumb.x + index.x) / 2;
-    let pinchY = (thumb.y + index.y) / 2;
-
-    // PINCH LOGIC:
-    // If the distance (d) is less than 40 pixels, the user is "pinching."
-    if (d < 40) {
-      // Check if that pinch is happening inside the ball's area.
-      let distToBall = dist(pinchX, pinchY, ball.x, ball.y);
-      
-      // If we are already holding it, OR if we just started pinching near the ball:
-      if (ball.isBeingHeld || distToBall < ball.r) {
-        ball.isBeingHeld = true; // State change!
-        ball.x = pinchX;         // Move the ball to our finger position
-        ball.y = pinchY;
-      }
-    } else {
-      // If fingers spread apart, the pinch is broken.
-      ball.isBeingHeld = false;
-    }
-  }
-
-  /**
-   * drawBall()
-   * Renders the interactive ball with visual feedback.
-   */
-  function drawBall() {
-    push(); // Start a temporary drawing state
-    if (ball.isBeingHeld) {
-      fill(255, 255, 0); // Turn yellow when grabbed
-      stroke(255);       // Add a white outline
-      strokeWeight(4);
-    } else {
-      fill(ball.color);  // Standard orange
-      noStroke();
-    }
-    circle(ball.x, ball.y, ball.r * 2);
-    pop(); // Reset drawing state
-  }
-</script>
-	
+    <p class="hint">Para controlar la escena VR, abre el seguimiento en la PC y la experiencia VR en tu teléfono.</p>
+  </main>
 </body>
 </html>

@@ -35,6 +35,7 @@ function serveFile(filename, contentType) {
 }
 
 app.get('/', serveFile('index.html', 'text/html; charset=utf-8'));
+app.get('/tracker', serveFile('tracker.html', 'text/html; charset=utf-8'));
 app.get('/vr', serveFile('vr.html', 'text/html; charset=utf-8'));
 app.get('/interaction.js', serveFile('interaction.js', 'text/javascript; charset=utf-8'));
 app.use((req, res) => res.status(404).send('Not found'));
