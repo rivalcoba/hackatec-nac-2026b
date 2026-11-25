@@ -1,16 +1,16 @@
 #import "../styles.typ": muted, navy, pale-blue, paper
 
-= Estructura de Costos Alternativa
+= Proyección de Costos
+Para determinar los costos de nuestro proyecto realizamos una estimación financiera dividida en tres categorías: materiales, desarrollo de la plataforma digital y mano de obra. En los materiales utilizamos precios cotizados de los componentes electrónicos necesarios para fabricar el guante sensorial, obteniendo un costo de \$926.84 pesos con IVA incluido.
 
-== Escenario Lean Startup: primeros seis meses
+Para la plataforma digital estimamos los gastos de diseño, programación, integración, almacenamiento y pruebas, con un total de \$3,900 pesos.
 
-PianiTech iniciará con 30 unidades comerciales y 10 equipos de demostración desde una cochera. El costo objetivo es \$1,500 por unidad y deberá validarse con una BOM.
+Finalmente, calculamos la mano de obra considerando las horas necesarias para ensamblar (considerando el salario mínimo por hora), programar y probar el dispositivo, obteniendo \$1,457.06 pesos adicionales. De esta manera, estimamos una inversión de \$6,283.90 pesos para desarrollar nuestro primer prototipo.”
 
-El escenario lean difiere el pago de los fundadores. Odoo Personalizado para tres usuarios cuesta \$10,650 por seis meses; Odoo Estándar puede reducirlo a \$6,000 @odoo_pricing_2026. Meta recibe \$5,000 mensuales @meta_ads_costs_2026.
+== Costos de Materiales del Guante Sensorial
 
-La cochera requiere adaptación, servicios, seguridad y mantenimiento. Deben verificarse uso de suelo, seguro, contrato eléctrico y tarifa PDBT @cfe_pdbt_2026. La SAS puede ser gratuita @gobmex_sas. El salario mínimo de 2026 orienta el escenario sostenible @conasami_salarios_2026.
-
-La #link(<tabla-lean>)[Tabla 1] concentra los montos:
+La siguiente tabla presenta los materiales y componentes considerados para la fabricación del guante sensorial, junto con sus cantidades, precios unitarios e IVA. El costo estimado de los materiales es de \$926.84 pesos, con IVA incluido.
+La #link(<cost-table>)[Tabla 1] concentra los montos:
 
 #block[
   #set text(size: 8pt)
@@ -31,7 +31,7 @@ La #link(<tabla-lean>)[Tabla 1] concentra los montos:
     text(weight: "bold")[Arranque lean], [Pago de fundadores diferido], text(weight: "bold")[\$292,490],
     [Escenario sostenible], [Lean + dos puestos y provisión patronal], [\$441,895],
   )
-  #label("tabla-lean")
+  #label("cost-table")
 ]
 
 #v(2mm)
