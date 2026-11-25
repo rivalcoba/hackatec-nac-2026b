@@ -1,16 +1,17 @@
 = Herramientas tecnológicas empleadas
 
-rrrr y ygegerr y y,pr,eclaivodter e interconexión,bd 9 V, cUSBylsDupt.
--*Sfwe:*AduoIDE, biblotecas  soort, cógo mbbidoFaskdesarlllidmonitoeComuica MQTTeilizóMQTT (*MessgeQueuingTeletyTspot*)co Moquitt como bokr. E unprotool ligeo d publicaciónsuscripcin qe cnumepo achodbada, ganza la temetríapispositivo, actvovara yacla senssapliacnes.Esta coinación s pertnentePinTehporqufcilia cntrolar etregamesajeintegrr disposios lmitadosfoma calabl.
-- *Actuadores:* motor paso a paso 28BYJ-48, motor DC 130 con hélice y módulo ULN2003 para potencia y protección.
-- *Sensores:* sensor de nivel de agua, sensor infrarrojo de flama y botón de control para activar o detener el motor.
-- *Alimentación e interconexión:* módulo MB102, batería de 9 V, cable USB y cables Dupont.
-- *Software:* Arduino IDE, bibliotecas de soporte, código embebido y Flask para desarrollar el cliente de monitoreo.
-- *Comunicación MQTT:* se utilizó MQTT (*Message Queuing Telemetry Transport*) con Mosquitto como broker. Es un protocolo ligero de publicación y suscripción que consume poco ancho de banda, organiza la telemetría por dispositivo, activo o variable y desacopla sensores y aplicaciones. Esta combinación es pertinente para PianiTech porque facilita controlar la entrega de mensajes e integrar dispositivos limitados de forma escalablePara armar y validar el prototipo se seleccionaron componentes accesibles y compatibles:
+La selección tecnológica responde a un criterio central: desarrollar una propuesta funcional, viable y de bajo costo, sin depender de componentes especializados o difíciles de conseguir. Por ello, se priorizaron elementos electrónicos existentes y disponibles en el mercado nacional, así como herramientas de software de bajo costo y, en su mayoría, de código abierto. Esta decisión busca reducir la inversión inicial, facilitar la adquisición y reposición de piezas y simplificar el mantenimiento del prototipo. Además, al apoyarse en tecnologías accesibles y ampliamente utilizadas, la solución puede ser más fácil de replicar, ajustar y validar en distintos entornos de capacitación.
 
-- *Control:* Arduino Uno y Sensor Shield para gestionar conexiones de alimentación y señales.
-- *Actuadores:* motor paso a paso 28BYJ-48, motor DC 130 con hélice y módulo ULN2003 para potencia y protección.
-- *Sensores:* sensor de nivel de agua, sensor infrarrojo de flama y botón de control para activar o detener el motor.
-- *Alimentación e interconexión:* módulo MB102, batería de 9 V, cable USB y cables Dupont.
-- *Software:* Arduino IDE, bibliotecas de soporte, código embebido y Flask para desarrollar el cliente de monitoreo.
-- *Comunicación MQTT:* se utilizó MQTT (*Message Queuing Telemetry Transport*) con Mosquitto como broker. Es un protocolo ligero de publicación y suscripción que consume poco ancho de banda, organiza la telemetría por dispositivo, activo o variable y desacopla sensores y aplicaciones. Esta combinación es pertinente para PianiTech porque facilita controlar la entrega de mensajes e integrar dispositivos limitados de forma escalable.
+Los componentes y herramientas considerados son:
+
+*Hardware*
+
+- *_Arduino Uno R3_*: Es una placa de desarrollo basada en el microcontrolador ATmega328P que sirve para aprender electrónica, crear prototipos y controlar dispositivos físicos mediante programación.
+- *_Placa de pruebas_*: Protoboard de 400 o 830 puntos, con buses de alimentación.
+- *_Motor de vibración tipo moneda_*: Genera vibraciones mediante una masa descentrada en su interior.
+- *_MOSFET canal N de nivel lógico_*: Es un transistor de efecto de campo que se activa y alcanza baja resistencia de conducción.
+
+*Software*
+
+- *_Lenguajes de programación_*: HTML, JavaScript, C++.
+- *_Programación_*: Visual Studio Code, Arduino IDE, Fusion 360.

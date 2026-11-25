@@ -4,7 +4,7 @@
   program: "InnovatecNM",
   document-type: "Memoria Técnica",
 
-  title: "VOLVO-DIDASTEK",
+  title: "HapticBus Trainer",
   subtitle: "Telemetría y Seguridad Industrial Adaptativa",
 
   reto: "Software Inteligente y Tecnologías Emergentes",

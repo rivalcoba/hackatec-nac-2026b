@@ -1,12 +1,16 @@
 = Modelo de negocio
 
-El Canvas (@modelo-negocio) resume cómo PianiTech crea, entrega y captura valor mediante nueve bloques relacionados @strategyzer_bmc.
+El Canvas (@modelo-negocio) resume cómo *HapticBus Trainer* crea, entrega y captura valor mediante nueve bloques relacionados @strategyzer_bmc.
 
-== Segmentos de clientes
+== Segmentos de clientes ¿Para quién va dirigido?
 
-Talleres y PYMES *brownfield* con inspecciones manuales; responsables de operación, mantenimiento y seguridad. INEGI confirma la relevancia del segmento @inegi_mipymes_2025.
+- Técnicos en mantenimiento de autobuses de la marca Volvo.
+- Talleres mecánicos.
+- Centros de atención.
+- Conductores de autobuses.
+- Empresas de transporte.
 
-== Propuesta de valor
+== Propuesta de valor ¿Qué ofrecemos?
 
 *Retrofitting* modular con sensores, MQTT, Python e *Isolation Forest*, sin reemplazar maquinaria. Centraliza telemetría y señala anomalías; no sustituye controles certificados.
 
