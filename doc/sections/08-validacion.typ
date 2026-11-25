@@ -1,16 +1,12 @@
 = Validación del modelo de negocio
 
-Para analizar y fortalecer el modelo de negocio de PianiTech se empleó la metodología SCAMPER, que permite examinar una propuesta desde siete perspectivas: sustituir, combinar, adaptar, modificar, poner en otros usos, eliminar y reordenar o revertir. Su aplicación ayuda a identificar oportunidades de mejora en el enfoque de *retrofitting*, la arquitectura de la solución y su crecimiento gradual.
-
-A continuación, se presentan las alternativas identificadas mediante cada componente de SCAMPER. Estas propuestas deberán complementarse con entrevistas y pruebas piloto en PYMES para validar necesidades, facilidad de instalación, utilidad de las alertas, presencia de falsos positivos, costos aceptables y posibles ajustes a la solución.
-
-- *Sustituir:* reemplazar la modernización total de maquinaria por una capa externa de instrumentación.
-- *Combinar:* integrar sensores heterogéneos, MQTT, ventanas temporales y *Isolation Forest* en un flujo común.
-- *Adaptar:* configurar identificadores, frecuencia de muestreo, características y temas según cada activo.
-- *Modificar:* iniciar con pocos puntos de monitoreo y ampliar la cobertura modularmente; ajustar ventanas y modelo con evidencia operativa.
-- *Poner en otros usos:* reutilizar la arquitectura en manufactura, mantenimiento, depósitos u otros entornos que requieran supervisión remota.
-- *Eliminar:* evitar el acoplamiento directo entre sensores y aplicaciones consumidoras, así como la dependencia exclusiva de revisiones manuales o umbrales únicos.
-- *Reordenar o revertir:* analizar primero ventanas completas y después priorizar la inspección humana, en lugar de reaccionar únicamente a lecturas aisladas.
+- *Sustituir:* Se propone complementar las formas de aprendizaje pasivo y las evaluaciones exclusivamente teóricas con una plataforma gamificada que integra simulaciones de fallas, retos interactivos y retroalimentación mediante un guante háptico. Con ello, se busca fortalecer las habilidades del personal de nuevo ingreso y acercarlo a las competencias esperadas para el mantenimiento de autobuses Volvo.
+- *Combinar:* Se combinaron sensores hápticos con el guante, aprendizaje en 3D con plataformas y diagnósticos automotriz con simulaciones.
+- *Adaptar:* Incorporar mecánicas de gamificación (rachas, ligas y retos diarios) al proceso de capacitación formal para fomentar el uso constante de la plataforma.
+- *Modificar:* Optimizar los métodos de capacitación facilitando el acceso a manuales, evaluaciones, prácticas en plataforma e Identificación visual de fallas por interacción digital mediante guante sensorial.
+- *Poner en otros usos:	* aplicarlo en instituciones educativas del área automotriz y mecánica para reforzar el aprendizaje práctico y su transferencia a casos reales, como podría ser laboratorios educativos en universidades, evaluación de competencias en centros de certificación y entrenamiento en talleres de multimarca.
+- *Eliminar:* Se eliminaron riesgos de dañar equipos por simulaciones virtuales, disponibilidad limitada de autobuses por una plataforma permanente y un aprendizaje únicamente presencial por acceso digital, promoviendo técnicos mejor preparados y la mejora continua en el mantenimiento de motores de autobuses.
+- *Reordenar:* Se reorganiza el proceso para hacerlo más eficiente reinvirtiendo el modelo tradicional donde el técnico aprende cuando ocurre una falla por un modelo propuesto donde el técnico se enfrenta primero a la falla simulada para posteriormente atender la falla real.
 
 #figure(
 	image(
@@ -18,32 +14,5 @@ A continuación, se presentan las alternativas identificadas mediante cada compo
 		format: "png",
 		width: 100%,
 	),
-	caption: [Los sensores de vibración, gas, fuego y nivel envían lecturas con marca de tiempo a un nodo Arduino, que las transmite por Wi‑Fi o Ethernet. Un cliente en Python valida y normaliza los datos, construye ventanas y aplica Isolation Forest para detectar anomalías. El broker MQTT coordina el intercambio y una base de series temporales conserva la información. Finalmente, una API/WebSocket distribuye actualizaciones al panel web, la aplicación móvil y el visor de realidad virtual, con protección TLS, autenticación y registro de actividad.],
-)<arch-diagram>
-
-#figure(
-	image(
-		"../assets/arch-diagram.png",
-		format: "png",
-		width: 100%,
-	),
-	caption: [Los sensores de vibración, gas, fuego y nivel envían lecturas con marca de tiempo a un nodo Arduino, que las transmite por Wi‑Fi o Ethernet. Un cliente en Python valida y normaliza los datos, construye ventanas y aplica Isolation Forest para detectar anomalías. El broker MQTT coordina el intercambio y una base de series temporales conserva la información. Finalmente, una API/WebSocket distribuye actualizaciones al panel web, la aplicación móvil y el visor de realidad virtual, con protección TLS, autenticación y registro de actividad.],
-)<arch-diagram>
-
-#figure(
-	image(
-		"../assets/arch-diagram.png",
-		format: "png",
-		width: 100%,
-	),
-	caption: [Los sensores de vibración, gas, fuego y nivel envían lecturas con marca de tiempo a un nodo Arduino, que las transmite por Wi‑Fi o Ethernet. Un cliente en Python valida y normaliza los datos, construye ventanas y aplica Isolation Forest para detectar anomalías. El broker MQTT coordina el intercambio y una base de series temporales conserva la información. Finalmente, una API/WebSocket distribuye actualizaciones al panel web, la aplicación móvil y el visor de realidad virtual, con protección TLS, autenticación y registro de actividad.],
-)<arch-diagram>
-
-#figure(
-	image(
-		"../assets/arch-diagram.png",
-		format: "png",
-		width: 100%,
-	),
-	caption: [Los sensores de vibración, gas, fuego y nivel envían lecturas con marca de tiempo a un nodo Arduino, que las transmite por Wi‑Fi o Ethernet. Un cliente en Python valida y normaliza los datos, construye ventanas y aplica Isolation Forest para detectar anomalías. El broker MQTT coordina el intercambio y una base de series temporales conserva la información. Finalmente, una API/WebSocket distribuye actualizaciones al panel web, la aplicación móvil y el visor de realidad virtual, con protección TLS, autenticación y registro de actividad.],
+	caption: [La imagen muestra el proceso de diseño del módulo háptico, desarrollado de manera iterativa mediante las etapas de entender, explorar y materializar del pensamiento de diseño (design thinking). Con este módulo se busca incorporar una dimensión táctil al sistema de entrenamiento y crear una interacción inmersiva que estimule el aprendizaje y el interés de los técnicos.],
 )<arch-diagram>
