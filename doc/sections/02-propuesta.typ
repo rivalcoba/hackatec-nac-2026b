@@ -1,6 +1,6 @@
 = Descripción de la propuesta
 
-*Didastek* es una propuesta de capacitación para el personal especializado en el mantenimiento de autobuses Volvo. Integra un guante háptico con una plataforma digital de aprendizaje gamificado que busca fortalecer las habilidades necesarias para identificar fallas y reconocer componentes.
+*HapticBus Trainer* es una propuesta de capacitación para el personal especializado en el mantenimiento de autobuses Volvo. Integra un guante háptico con una plataforma digital de aprendizaje gamificado que busca fortalecer las habilidades necesarias para identificar fallas y reconocer componentes.
 
 La propuesta busca reducir la brecha entre los conocimientos del personal de nuevo ingreso y las competencias esperadas por Volvo. Para ello, el sistema presentará casos prácticos sobre fallas en motores de autobuses. Cada caso describirá una situación y ofrecerá varias opciones de piezas o componentes, entre las cuales el técnico deberá identificar la adecuada.
 

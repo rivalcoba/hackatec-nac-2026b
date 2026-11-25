@@ -8,7 +8,7 @@
   subtitle: "Telemetría y Seguridad Industrial Adaptativa",
 
   reto: "Software Inteligente y Tecnologías Emergentes",
-  tematica: " Sistema Inteligente de Entrenamiento para Autobuses",
+  tematica: " Sistema Inteligente de Entrenamiento para Grupo Volvo",
 
   students: (
     (

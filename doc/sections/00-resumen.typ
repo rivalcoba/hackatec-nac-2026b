@@ -9,7 +9,7 @@ A través de casos prácticos y simulaciones de fallas en motores, los técnicos
 Con esta propuesta se busca ofrecer una experiencia de formación práctica, accesible e interactiva que contribuya al desarrollo de habilidades para reconocer componentes e identificar fallas.
 
 #figure(
-  image("../assets/didastek-logo.jpg",width: 123mm),
+  image("../assets/didastek-logo.png",width: 123mm),
   caption: [Imagen gráfica de la solución HapticBus Trainer]
 )<logo-HapticBus-Trainer>
 
