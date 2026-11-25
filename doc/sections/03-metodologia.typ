@@ -99,6 +99,6 @@ La metodología de desarrollo (@fig-metodologia-pianitech) se organiza en siete 
     ),
   ),
   caption: [
-    Metodología incremental para el desarrollo y la validación de PianiTech.
+    Metodología incremental para el desarrollo y la validación de *HapticBus Trainer*.
   ],
 ) <fig-metodologia-pianitech>
