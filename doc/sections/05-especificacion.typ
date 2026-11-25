@@ -1,6 +1,6 @@
 = Especificación técnica de la propuesta
 
-== Características ténicas esperadas
+== Características técnicas esperadas
 
 Se desarrolló un prototipo funcional que integra una plataforma de capacitación tolerante a la alta latencia y un guante sensorial que proporciona retroalimentación mediante vibraciones. Esta estimulación háptica facilita el aprendizaje práctico de los técnicos.
 El sistema comprende los siguientes componentes electrónicos:
